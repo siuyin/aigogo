@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"io"
 	"log"
@@ -24,6 +25,34 @@ func main() {
 	h2 := func(w http.ResponseWriter, _ *http.Request) {
 		io.WriteString(w, "Hello from a HandleFunc #2!\n")
 	}
+	neighborhood := func(w http.ResponseWriter, r *http.Request) {
+		key := dflt.EnvString("MAPS_API_KEY", "use your real api key")
+		latlng := r.FormValue("latlng")
+		res, err := http.Get(fmt.Sprintf("https://maps.googleapis.com/maps/api/geocode/json?latlng=%s&result_type=neighborhood&key=%s", latlng, key))
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		var f interface{}
+		dec := json.NewDecoder(res.Body)
+		if err = dec.Decode(&f); err != nil {
+			log.Fatal(err)
+		}
+		geoRes := f.(map[string]interface{})["results"]
+		firstRes := geoRes.([]interface{})[0]
+		addr := firstRes.(map[string]interface{})["formatted_address"]
+		log.Println(addr)
+		//body, err := io.ReadAll(res.Body)
+		res.Body.Close()
+		if res.StatusCode > 299 {
+			log.Fatalf("Response failed with status code: %d\n", res.StatusCode)
+		}
+		if err != nil {
+			log.Fatal(err)
+		}
+		fmt.Fprintf(w, "%s", addr.(string))
+
+	}
 
 	life := func(w http.ResponseWriter, _ *http.Request) {
 		meaningOfLife(w)
@@ -33,6 +62,7 @@ func main() {
 	http.HandleFunc("/h1", h1)
 	http.HandleFunc("/endpoint", h2)
 	http.HandleFunc("/life", life)
+	http.HandleFunc("/loc", neighborhood)
 
 	http.HandleFunc("/hello/", func(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, "Hello World! It is %v\n", time.Now().Format("15:04:05.000 MST"))
