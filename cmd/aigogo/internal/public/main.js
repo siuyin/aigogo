@@ -16,7 +16,7 @@ async function updateNeighborhood(lat, lng) {
         const resp = await fetch(url);
         if (!resp.ok) { throw new Error(`response status: ${resp.status}`) }
         const respTxt = await resp.text();
-        geoCoords.innerText = `I see you are in ${respTxt}`;
+        geoCoords.innerText = `I see you are in the neighbourhood of ${respTxt}`;
         sessionStorage.setItem("neighborhood", respTxt);
     } catch (err) {
         console.error(err.message);
