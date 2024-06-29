@@ -39,7 +39,7 @@ function copyUserPromptToModelResponse() {
 async function retrieveDocsForAugmentation() {
     let usrQry = encodeURIComponent(userPrompt.value);
     //     const url = `http://localhost:8080/retr?userPrompt=${usrQry}`; // DEV
-    const url = `https://aigogo-onsvm4sjba-uc.a.run.app/userPrompt?latlng=${usrQry}` // PROD
+    const url = `https://aigogo-onsvm4sjba-uc.a.run.app/retr?userPrompt=${usrQry}` // PROD
     try {
         const resp = await fetch(url);
         if (!resp.ok) { throw new Error(`response status: ${resp.status}`) }
