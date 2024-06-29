@@ -92,7 +92,7 @@ func main() {
 		fmt.Fprintf(w, "Hello World! It is %v\n", time.Now().Format("15:04:05.000 MST"))
 	})
 
-	// 	 	http.Handle("/", http.FileServer(http.Dir("./internal/public"))) // DEV
+	// 	http.Handle("/", http.FileServer(http.Dir("./internal/public"))) // DEV
 	http.Handle("/", http.FileServer(http.FS(public.Content))) // PROD
 
 	log.Fatal(http.ListenAndServe(":"+dflt.EnvString("HTTP_PORT", "8080"), nil))
@@ -127,7 +127,7 @@ func initDB() *chromem.Collection {
 }
 
 func loadDocuments() []chromem.Document {
-	// 	 	f, err := os.Open("./internal/vecdb/embeddings.gob") // DEV
+	// 	f, err := os.Open("./internal/vecdb/embeddings.gob") // DEV
 	f, err := vecdb.Content.Open("embeddings.gob") // PROD
 	if err != nil {
 		log.Fatal(err)
