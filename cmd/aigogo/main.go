@@ -10,7 +10,7 @@ import (
 	"time"
 
 	"github.com/google/generative-ai-go/genai"
-	"github.com/siuyin/aigogo/cmd/aigogo/internal/public"
+	_ "github.com/siuyin/aigogo/cmd/aigogo/internal/public"
 	"github.com/siuyin/aigotut/client"
 	"github.com/siuyin/aigotut/gfmt"
 	"github.com/siuyin/dflt"
@@ -25,6 +25,12 @@ func main() {
 	h2 := func(w http.ResponseWriter, _ *http.Request) {
 		io.WriteString(w, "Hello from a HandleFunc #2!\n")
 	}
+
+	type mapResponse struct {
+		Results []struct {
+			FormattedAddress string `json:"formatted_address"`
+		} `json:"results"`
+	}
 	neighborhood := func(w http.ResponseWriter, r *http.Request) {
 		key := dflt.EnvString("MAPS_API_KEY", "use your real api key")
 		latlng := r.FormValue("latlng")
@@ -33,16 +39,12 @@ func main() {
 			log.Fatal(err)
 		}
 
-		var f interface{}
+		var mapRes mapResponse
 		dec := json.NewDecoder(res.Body)
-		if err = dec.Decode(&f); err != nil {
+		if err = dec.Decode(&mapRes); err != nil {
 			log.Fatal(err)
 		}
-		geoRes := f.(map[string]interface{})["results"]
-		firstRes := geoRes.([]interface{})[0]
-		addr := firstRes.(map[string]interface{})["formatted_address"]
-		log.Println(addr)
-		//body, err := io.ReadAll(res.Body)
+
 		res.Body.Close()
 		if res.StatusCode > 299 {
 			log.Fatalf("Response failed with status code: %d\n", res.StatusCode)
@@ -50,7 +52,10 @@ func main() {
 		if err != nil {
 			log.Fatal(err)
 		}
-		fmt.Fprintf(w, "%s", addr.(string))
+		if len(mapRes.Results) == 0 {
+			log.Fatal("no results returned")
+		}
+		fmt.Fprintf(w, "%s", mapRes.Results[0].FormattedAddress)
 
 	}
 
@@ -68,8 +73,8 @@ func main() {
 		fmt.Fprintf(w, "Hello World! It is %v\n", time.Now().Format("15:04:05.000 MST"))
 	})
 
-	//http.Handle("/", http.FileServer(http.Dir("./internal/public"))) // uncomment for development
-	http.Handle("/", http.FileServer(http.FS(public.Content))) // uncomment for deployment
+	http.Handle("/", http.FileServer(http.Dir("./internal/public"))) // uncomment for development
+	//http.Handle("/", http.FileServer(http.FS(public.Content))) // uncomment for deployment
 
 	log.Fatal(http.ListenAndServe(":"+dflt.EnvString("HTTP_PORT", "8080"), nil))
 }
