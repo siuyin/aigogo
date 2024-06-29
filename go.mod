@@ -5,6 +5,7 @@ go 1.22.1
 require (
 	github.com/google/generative-ai-go v0.14.0
 	github.com/siuyin/aigotut v0.0.0-20240627082043-caf56daa217d
+	github.com/siuyin/dflt v0.0.0-20230329062002-0475f4d54412
 )
 
 require (

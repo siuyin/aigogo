@@ -1,0 +1,15 @@
+#startCam {
+    background-color: crimson;
+}
+
+#startCam:hover:enabled {
+    background-color: red;
+}
+
+.min {
+    width: fit-content;
+}
+
+video {
+    margin: 3px;
+}
