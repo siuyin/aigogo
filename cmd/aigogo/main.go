@@ -170,7 +170,8 @@ func meaningOfLife(w http.ResponseWriter, location string, currentTime string) {
 		who likes to quote Shakespear and answers questions with questions.
 		Your response should be at least 100 words long.
 		Weave into your response the user's location: %s
-		and the current time %s
+		and the current time %s restating the time zone in words eg. Singapore Time
+		or UTC or Mountain Standard Time.
 		Format your output as plain text.`, location, currentTime))},
 	}
 	iter := cl.Model.GenerateContentStream(context.Background(),
