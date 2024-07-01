@@ -65,7 +65,7 @@ meaningOfLifeLink.addEventListener("click", molStreamer);
 async function molStreamer() {
     modelResponse.innerText = "";
     embeddingResponse.innerHTML = "";
-    const url = "/life";
+    const url = `/life?loc=${encodeURIComponent(sessionStorage.getItem("neighborhood"))}`;
     const res = await fetch(url);
     const dec = new TextDecoder("utf-8");
     for await (const chunk of res.body) {

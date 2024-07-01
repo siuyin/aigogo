@@ -58,8 +58,8 @@ func main() {
 	}
 	http.HandleFunc("/loc", locationFunc)
 
-	life := func(w http.ResponseWriter, _ *http.Request) {
-		meaningOfLife(w)
+	life := func(w http.ResponseWriter, r *http.Request) {
+		meaningOfLife(w, r.FormValue("loc"), time.Now().Format("Monday, 03:04PM, 2 January 2006"))
 	}
 	defer cl.Close()
 	http.HandleFunc("/life", life)
@@ -164,9 +164,14 @@ func addDoc(docs []chromem.Document, rec *emb.Rec) []chromem.Document {
 	return docs
 }
 
-func meaningOfLife(w http.ResponseWriter) {
+func meaningOfLife(w http.ResponseWriter, location string, currentTime string) {
 	cl.Model.SystemInstruction = &genai.Content{
-		Parts: []genai.Part{genai.Text("You are a philosophy professor who likes to quote Shakespear and answers questions with questions. Your response should be at least 100 words long. Format your output as plain text.")},
+		Parts: []genai.Part{genai.Text(fmt.Sprintf(`You are a philosophy professor
+		who likes to quote Shakespear and answers questions with questions.
+		Your response should be at least 100 words long.
+		Weave into your response the user's location: %s
+		and the current time %s
+		Format your output as plain text.`, location, currentTime))},
 	}
 	iter := cl.Model.GenerateContentStream(context.Background(),
 		genai.Text("What is the meaning of life?"))
