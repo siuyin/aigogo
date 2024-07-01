@@ -13,3 +13,8 @@
 video {
     margin: 3px;
 }
+
+pre {
+    border: 0;
+    background-color: transparent;
+}

@@ -31,6 +31,7 @@ const userPrompt = document.getElementById("userPrompt");
 const userSubmit = document.getElementById("userSubmit");
 userSubmit.addEventListener("click", retrieveDocsForAugmentation);
 
+const embeddingResponse = document.getElementById("embeddingResponse");
 const modelResponse = document.getElementById("modelResponse");
 function copyUserPromptToModelResponse() {
     modelResponse.innerHTML = userPrompt.value;
@@ -45,7 +46,8 @@ async function retrieveDocsForAugmentation() {
         if (!resp.ok) { throw new Error(`response status: ${resp.status}`) }
         const respTxt = await resp.text();
         sessionStorage.setItem("ragDocs", respTxt);
-        modelResponse.innerHTML = respTxt;
+        embeddingResponse.innerHTML = respTxt;
+        modelResponse.innerText = "";
     } catch (err) {
         console.error(err.message);
     }
@@ -57,3 +59,16 @@ function showStorage() {
     console.log(sessionStorage.getItem("neighborhood"));
 }
 showStorage();
+
+const meaningOfLifeLink = document.getElementById("meaningOfLife");
+meaningOfLifeLink.addEventListener("click", molStreamer);
+async function molStreamer() {
+    modelResponse.innerText = "";
+    embeddingResponse.innerHTML = "";
+    const url = "/life";
+    const res = await fetch(url);
+    const dec = new TextDecoder("utf-8");
+    for await (const chunk of res.body) {
+        modelResponse.innerHTML += (dec.decode(chunk));
+    }
+}
