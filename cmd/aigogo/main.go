@@ -37,8 +37,8 @@ type mapResponse struct {
 }
 
 func main() {
-// 	http.Handle("/", http.FileServer(http.Dir("./internal/public"))) // DEV
-	 	http.Handle("/", http.FileServer(http.FS(public.Content))) // PROD
+	// 	http.Handle("/", http.FileServer(http.Dir("./internal/public"))) // DEV
+	http.Handle("/", http.FileServer(http.FS(public.Content))) // PROD
 
 	retrievalFunc := func(w http.ResponseWriter, r *http.Request) {
 		qry := r.FormValue("userPrompt")
@@ -135,8 +135,8 @@ func decodeLocationAPIResp(res *http.Response, mapRes *mapResponse) *mapResponse
 	return mapRes
 }
 func loadDocuments() []chromem.Document {
-// 	f, err := os.Open("./internal/vecdb/embeddings.gob") // DEV
-	 	f, err := vecdb.Content.Open("embeddings.gob") // PROD
+	// 	f, err := os.Open("./internal/vecdb/embeddings.gob") // DEV
+	f, err := vecdb.Content.Open("embeddings.gob") // PROD
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -165,8 +165,11 @@ func addDoc(docs []chromem.Document, rec *emb.Rec) []chromem.Document {
 }
 
 func meaningOfLife(w http.ResponseWriter) {
+	cl.Model.SystemInstruction = &genai.Content{
+		Parts: []genai.Part{genai.Text("You are a philosophy professor who likes to quote Shakespear and answers questions with questions. Your response should be at least 100 words long. Format your output as plain text.")},
+	}
 	iter := cl.Model.GenerateContentStream(context.Background(),
-		genai.Text("What is the meaning of life? Format your output as plain text."))
+		genai.Text("What is the meaning of life?"))
 	for {
 		resp, err := iter.Next()
 		if err == iterator.Done {
