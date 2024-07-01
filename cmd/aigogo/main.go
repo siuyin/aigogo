@@ -59,7 +59,7 @@ func main() {
 	http.HandleFunc("/loc", locationFunc)
 
 	life := func(w http.ResponseWriter, r *http.Request) {
-		meaningOfLife(w, r.FormValue("loc"), time.Now().Format("Monday, 03:04PM, 2 January 2006"))
+		meaningOfLife(w, r.FormValue("loc"), time.Now().Format("Monday, 03:04PM MST, 2 January 2006"))
 	}
 	defer cl.Close()
 	http.HandleFunc("/life", life)
