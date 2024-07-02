@@ -8,7 +8,10 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"os"
 	"runtime"
+	"strconv"
+	"strings"
 	"time"
 
 	"github.com/google/generative-ai-go/genai"
@@ -19,6 +22,7 @@ import (
 	"github.com/siuyin/aigotut/emb"
 	"github.com/siuyin/dflt"
 	"google.golang.org/api/iterator"
+	"googlemaps.github.io/maps"
 )
 
 var (
@@ -118,7 +122,13 @@ func augmentGenerationWithDoc(w http.ResponseWriter, r *http.Request, doc []stri
 	//writeRetrievedDocs(w, doc)
 	userPrompt := r.FormValue("userPrompt")
 	location := r.FormValue("loc")
-	currentTime := time.Now().Format("Monday, 03:04PM MST, 2 January 2006")
+	latlng := latLng(r.FormValue("latlng"))
+	zoneName, _ := localTimezoneName(latlng)
+	tzLoc, err := time.LoadLocation(zoneName)
+	if err != nil {
+		log.Fatal(err)
+	}
+	currentTime := time.Now().In(tzLoc).Format("Monday, 03:04PM MST, 2 January 2006")
 
 	cl.Model.SystemInstruction = &genai.Content{
 		Parts: []genai.Part{genai.Text(fmt.Sprintf(`You are a considerate and kind
@@ -275,4 +285,33 @@ func retrieveDocsForAugmentation(qry string) []string {
 		doc = append(doc, qres[i].Content)
 	}
 	return doc
+}
+
+func localTimezoneName(latlng *maps.LatLng) (string, string) {
+	cl, err := maps.NewClient(maps.WithAPIKey(os.Getenv("MAPS_API_KEY")))
+	if err != nil {
+		log.Fatalf("NewClient: %v", err)
+	}
+
+	r := &maps.TimezoneRequest{Timestamp: time.Now(), Location: latlng}
+
+	resp, err := cl.Timezone(context.Background(), r)
+	if err != nil {
+		log.Fatalf("Timezone: %v", err)
+	}
+	return resp.TimeZoneID, resp.TimeZoneName
+}
+
+func latLng(latlng string) *maps.LatLng {
+	part := strings.Split(latlng, ",")
+	lat, err := strconv.ParseFloat(part[0], 64)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	lng, err := strconv.ParseFloat(part[1], 64)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return &maps.LatLng{Lat: lat, Lng: lng}
 }

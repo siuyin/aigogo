@@ -40,8 +40,8 @@ function copyUserPromptToModelResponse() {
 async function retrieveDocsForAugmentation() {
     const loc = encodeURIComponent(sessionStorage.getItem("neighborhood"));
     let usrQry = encodeURIComponent(userPrompt.value);
-    //     const url = `http://localhost:8080/retr?userPrompt=${usrQry}&loc=${loc}`; // DEV
-    const url = `https://aigogo-onsvm4sjba-uc.a.run.app/retr?userPrompt=${usrQry}&loc=${loc}` // PROD
+    //     const url = `http://localhost:8080/retr?userPrompt=${usrQry}&loc=${loc}&latlng=${sessionStorage.getItem("latlng")}`; // DEV
+    const url = `https://aigogo-onsvm4sjba-uc.a.run.app/retr?userPrompt=${usrQry}&loc=${loc}&latlng=${sessionStorage.getItem("latlng")}` // PROD
 
     embeddingResponse.innerHTML = "working ... give me a few seconds ..."
     try {
