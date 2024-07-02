@@ -32,6 +32,8 @@ var (
 	em         *genai.EmbeddingModel
 	collection *chromem.Collection
 	db         *chromem.DB
+
+	mapsClient *maps.Client
 )
 
 type mapResponse struct {
@@ -88,6 +90,7 @@ func init() {
 	cl = client.New()
 	em = initEmbeddingClient()
 	collection = initDB()
+	mapsClient = initMapsClient()
 }
 
 func initEmbeddingClient() *genai.EmbeddingModel {
@@ -110,6 +113,13 @@ func initDB() *chromem.Collection {
 	c.AddDocuments(ctx, docs, runtime.NumCPU())
 	return c
 
+}
+func initMapsClient() *maps.Client {
+	cl, err := maps.NewClient(maps.WithAPIKey(os.Getenv("MAPS_API_KEY")))
+	if err != nil {
+		log.Fatal(err)
+	}
+	return cl
 }
 
 // func writeRetrievedDocs(w http.ResponseWriter, doc []string) {
@@ -288,14 +298,9 @@ func retrieveDocsForAugmentation(qry string) []string {
 }
 
 func localTimezoneName(latlng *maps.LatLng) (string, string) {
-	cl, err := maps.NewClient(maps.WithAPIKey(os.Getenv("MAPS_API_KEY")))
-	if err != nil {
-		log.Fatalf("NewClient: %v", err)
-	}
-
 	r := &maps.TimezoneRequest{Timestamp: time.Now(), Location: latlng}
 
-	resp, err := cl.Timezone(context.Background(), r)
+	resp, err := mapsClient.Timezone(context.Background(), r)
 	if err != nil {
 		log.Fatalf("Timezone: %v", err)
 	}

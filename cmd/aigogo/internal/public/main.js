@@ -25,7 +25,7 @@ async function updateNeighborhood(lat, lng) {
 }
 
 const currentTime = document.getElementById("currentTime");
-currentTime.innerText = `The time is: ${new Date(Date.now()).toString()}`;
+currentTime.innerText = `Good ${getDayPart(new Date)}`;
 
 const userPrompt = document.getElementById("userPrompt");
 const userSubmit = document.getElementById("userSubmit");
@@ -36,7 +36,27 @@ const modelResponse = document.getElementById("modelResponse");
 function copyUserPromptToModelResponse() {
     modelResponse.innerHTML = userPrompt.value;
 }
+function getDayPart(currentTime) {
+    // Get the hour (0-23)
+    const hour = currentTime.getHours();
 
+    // Define ranges for each day part
+    const morning = { start: 5, end: 11 };
+    const afternoon = { start: 12, end: 17 };
+    const evening = { start: 18, end: 21 };
+    const night = { start: 22, end: 4 };
+
+    // Check which range the hour falls into
+    if (hour >= morning.start && hour < afternoon.start) {
+        return "Morning";
+    } else if (hour >= afternoon.start && hour < evening.start) {
+        return "Afternoon";
+    } else if (hour >= evening.start && hour < night.start) {
+        return "Evening";
+    } else {
+        return "Night";
+    }
+}
 async function retrieveDocsForAugmentation() {
     const loc = encodeURIComponent(sessionStorage.getItem("neighborhood"));
     let usrQry = encodeURIComponent(userPrompt.value);
