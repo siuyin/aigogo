@@ -108,11 +108,11 @@ func initDB() *chromem.Collection {
 
 }
 
-func writeRetrievedDocs(w http.ResponseWriter, doc []string) {
-	for _, d := range doc {
-		io.WriteString(w, "<p>"+d+"</p>")
-	}
-}
+// func writeRetrievedDocs(w http.ResponseWriter, doc []string) {
+// 	for _, d := range doc {
+// 		io.WriteString(w, "<p>"+d+"</p>")
+// 	}
+// }
 
 func augmentGenerationWithDoc(w http.ResponseWriter, r *http.Request, doc []string) {
 	//writeRetrievedDocs(w, doc)
@@ -143,6 +143,10 @@ func augmentGenerationWithDoc(w http.ResponseWriter, r *http.Request, doc []stri
 		to visit or when recommending restaurants or food outlets.
 		If you are quoting a specific time be sure to mention the time together with the
 		long form timezone (eg. Singapore Time or Mountain Standard Time).
+		Very important when evaluating time and time appropriate activities, express the
+		time in the given location. Note that the time may be quoted in GMT or UTC
+		but if the location is, say, in Singapore, then you should convert the time
+		to Singapore Time.
 		
 		Make at least two recommendation the main recommendation and the alternative.
 		Make it clear that the user has a choice.`,
