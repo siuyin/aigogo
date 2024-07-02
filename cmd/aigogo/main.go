@@ -43,9 +43,8 @@ func main() {
 	retrievalFunc := func(w http.ResponseWriter, r *http.Request) {
 		qry := r.FormValue("userPrompt")
 		doc := retrieveDocsForAugmentation(qry)
-		for _, d := range doc {
-			io.WriteString(w, "<p>"+d+"</p>")
-		}
+		//writeRetrievedDocs(w, doc)
+		augmentGenerationWithDoc(w, r, doc)
 	}
 	http.HandleFunc("/retr", retrievalFunc)
 
@@ -107,6 +106,62 @@ func initDB() *chromem.Collection {
 	c.AddDocuments(ctx, docs, runtime.NumCPU())
 	return c
 
+}
+
+func writeRetrievedDocs(w http.ResponseWriter, doc []string) {
+	for _, d := range doc {
+		io.WriteString(w, "<p>"+d+"</p>")
+	}
+}
+
+func augmentGenerationWithDoc(w http.ResponseWriter, r *http.Request, doc []string) {
+	//writeRetrievedDocs(w, doc)
+	userPrompt := r.FormValue("userPrompt")
+	location := r.FormValue("loc")
+	currentTime := time.Now().Format("Monday, 03:04PM MST, 2 January 2006")
+
+	cl.Model.SystemInstruction = &genai.Content{
+		Parts: []genai.Part{genai.Text(fmt.Sprintf(`You are a considerate and kind
+		caregiver for an aged person. Your aim is to entertain and engage with the
+		person to maintain her mental acuity and to stave off dementia.
+		Your responses are kind but authoritative and firm. Below are RESOURCE 1 and
+		RESOURCE 2 from experienced caregiver KitSiew. Feel free to use as much or
+		as little of the RESOURCES 1 or RESOURCE 2 when responding to the user prompt.
+		
+		RESOURCE 1: %s
+
+		RESOURCE 2: %s
+
+		If there is insufficent data, please supplement your response with what you know.
+		Some of the user prompts or queries will relate to singing songs. In this case,
+		look up what you know about the relevant song title's lyrics and include some
+		portion of the lyrics into your response.
+		When formulating your response consider the current date and time: %s
+		and also the user's location: %s. This is particulary important when your response
+		includes an outdoor activity as the elderly may trip and fall in the dark.
+		Also look up opening hours if you have the data when recommending trips to places
+		to visit or when recommending restaurants or food outlets.
+		If you are quoting a specific time be sure to mention the time together with the
+		long form timezone (eg. Singapore Time or Mountain Standard Time).
+		
+		Make at least two recommendation the main recommendation and the alternative.
+		Make it clear that the user has a choice.`,
+			doc[0], doc[1], currentTime, location))},
+	}
+
+	iter := cl.Model.GenerateContentStream(context.Background(),
+		genai.Text(userPrompt))
+	for {
+		resp, err := iter.Next()
+		if err == iterator.Done {
+			break
+		}
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		fPrintResponse(w, resp)
+	}
 }
 
 func getLocationAPIResp(r *http.Request) *http.Response {
