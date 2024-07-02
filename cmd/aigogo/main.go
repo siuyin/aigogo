@@ -16,6 +16,8 @@ import (
 
 	"github.com/google/generative-ai-go/genai"
 	"github.com/philippgille/chromem-go"
+	"github.com/siuyin/aigogo/cmd/aigogo/internal/public"
+	"github.com/siuyin/aigogo/cmd/aigogo/internal/vecdb"
 	"github.com/siuyin/aigotut/client"
 	"github.com/siuyin/aigotut/emb"
 	"github.com/siuyin/dflt"
@@ -41,8 +43,8 @@ type mapResponse struct {
 }
 
 func main() {
-	http.Handle("/", http.FileServer(http.Dir("./internal/public"))) // DEV
-	// 	http.Handle("/", http.FileServer(http.FS(public.Content))) // PROD
+	// 	http.Handle("/", http.FileServer(http.Dir("./internal/public"))) // DEV
+	http.Handle("/", http.FileServer(http.FS(public.Content))) // PROD
 
 	retrievalFunc := func(w http.ResponseWriter, r *http.Request) {
 		qry := r.FormValue("userPrompt")
@@ -62,7 +64,7 @@ func main() {
 	http.HandleFunc("/loc", locationFunc)
 
 	life := func(w http.ResponseWriter, r *http.Request) {
-		latlng:=r.FormValue("latlng")
+		latlng := r.FormValue("latlng")
 		meaningOfLife(w, r.FormValue("loc"), time.Now().In(tzLoc(latlng)).Format("Monday, 03:04PM MST, 2 January 2006"))
 	}
 	defer cl.Close()
@@ -131,7 +133,7 @@ func augmentGenerationWithDoc(w http.ResponseWriter, r *http.Request, doc []stri
 	//writeRetrievedDocs(w, doc)
 	userPrompt := r.FormValue("userPrompt")
 	location := r.FormValue("loc")
-	latlng :=r.FormValue("latlng")
+	latlng := r.FormValue("latlng")
 	currentTime := time.Now().In(tzLoc(latlng)).Format("Monday, 03:04PM MST, 2 January 2006")
 
 	cl.Model.SystemInstruction = &genai.Content{
@@ -205,8 +207,8 @@ func decodeLocationAPIResp(res *http.Response, mapRes *mapResponse) *mapResponse
 	return mapRes
 }
 func loadDocuments() []chromem.Document {
-	f, err := os.Open("./internal/vecdb/embeddings.gob") // DEV
-	// 	f, err := vecdb.Content.Open("embeddings.gob") // PROD
+	// 	f, err := os.Open("./internal/vecdb/embeddings.gob") // DEV
+	f, err := vecdb.Content.Open("embeddings.gob") // PROD
 	if err != nil {
 		log.Fatal(err)
 	}
