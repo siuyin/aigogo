@@ -43,8 +43,12 @@ type mapResponse struct {
 }
 
 func main() {
-	// 	http.Handle("/", http.FileServer(http.Dir("./internal/public"))) // DEV
-	http.Handle("/", http.FileServer(http.FS(public.Content))) // PROD
+	depl := dflt.EnvString("DEPLOY", "DEV")
+	if depl == "DEV" {
+		http.Handle("/", http.FileServer(http.Dir("./internal/public"))) // DEV
+	} else {
+		http.Handle("/", http.FileServer(http.FS(public.Content))) // PROD
+	}
 
 	retrievalFunc := func(w http.ResponseWriter, r *http.Request) {
 		qry := r.FormValue("userPrompt")
@@ -245,10 +249,22 @@ func decodeLocationAPIResp(res *http.Response, mapRes *mapResponse) *mapResponse
 	return mapRes
 }
 func loadDocuments() []chromem.Document {
-	// 	f, err := os.Open("./internal/vecdb/embeddings.gob") // DEV
-	f, err := vecdb.Content.Open("embeddings.gob") // PROD
-	if err != nil {
-		log.Fatal(err)
+	var (
+		f    io.ReadCloser
+		err  error
+		depl string
+	)
+	depl = dflt.EnvString("DEPLOY", "DEV")
+	if depl == "DEV" {
+		f, err = os.Open("./internal/vecdb/embeddings.gob") // DEV
+		if err != nil {
+			log.Fatal(err)
+		}
+	} else {
+		f, err = vecdb.Content.Open("embeddings.gob") // PROD
+		if err != nil {
+			log.Fatal(err)
+		}
 	}
 	defer f.Close()
 

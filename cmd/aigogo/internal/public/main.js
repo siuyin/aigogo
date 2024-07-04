@@ -10,8 +10,9 @@ navigator.geolocation.getCurrentPosition((position) => {
 });
 
 async function updateNeighborhood(lat, lng) {
-    //     const url = `http://localhost:8080/loc?latlng=${lat},${lng}`; // DEV
-    const url = `https://aigogo-onsvm4sjba-uc.a.run.app/loc?latlng=${lat},${lng}` // PROD
+    const url = `/loc?latlng=${lat},${lng}`;
+    //const url = `http://localhost:8080/loc?latlng=${lat},${lng}`; 
+    //     const url = `https://aigogo-onsvm4sjba-uc.a.run.app/loc?latlng=${lat},${lng}` 
     try {
         const resp = await fetch(url);
         if (!resp.ok) { throw new Error(`response status: ${resp.status}`) }
@@ -60,8 +61,9 @@ function getDayPart(currentTime) {
 async function retrieveDocsForAugmentation() {
     const loc = encodeURIComponent(sessionStorage.getItem("neighborhood"));
     let usrQry = encodeURIComponent(userPrompt.value);
-    //     const url = `http://localhost:8080/retr?userPrompt=${usrQry}&loc=${loc}&latlng=${sessionStorage.getItem("latlng")}`; // DEV
-    const url = `https://aigogo-onsvm4sjba-uc.a.run.app/retr?userPrompt=${usrQry}&loc=${loc}&latlng=${sessionStorage.getItem("latlng")}` // PROD
+    const url = `/retr?userPrompt=${usrQry}&loc=${loc}&latlng=${sessionStorage.getItem("latlng")}`;
+    //const url = `http://localhost:8080/retr?userPrompt=${usrQry}&loc=${loc}&latlng=${sessionStorage.getItem("latlng")}`;
+    //     const url = `https://aigogo-onsvm4sjba-uc.a.run.app/retr?userPrompt=${usrQry}&loc=${loc}&latlng=${sessionStorage.getItem("latlng")}`
 
     embeddingResponse.innerHTML = "working ... give me a few seconds ..."
     try {
