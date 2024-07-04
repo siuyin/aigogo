@@ -65,7 +65,7 @@ func main() {
 
 	life := func(w http.ResponseWriter, r *http.Request) {
 		latlng := r.FormValue("latlng")
-		meaningOfLife(w, r.FormValue("loc"), time.Now().In(tzLoc(latlng)).Format("Monday, 03:04PM MST, 2 January 2006"))
+		meaningOfLife(w, r.FormValue("loc"), time.Now().In(tzLoc(latlng)).Format("Monday, 03:04PM, 2 January 2006"))
 	}
 	defer cl.Close()
 	http.HandleFunc("/life", life)
@@ -134,7 +134,7 @@ func augmentGenerationWithDoc(w http.ResponseWriter, r *http.Request, doc []stri
 	userPrompt := r.FormValue("userPrompt")
 	location := r.FormValue("loc")
 	latlng := r.FormValue("latlng")
-	currentTime := time.Now().In(tzLoc(latlng)).Format("Monday, 03:04PM MST, 2 January 2006")
+	currentTime := time.Now().In(tzLoc(latlng)).Format("Monday, 03:04PM, 2 January 2006")
 
 	cl.Model.SystemInstruction = &genai.Content{
 		Parts: []genai.Part{genai.Text(fmt.Sprintf(`You are a considerate and kind
@@ -180,7 +180,7 @@ func augmentGenerationWithDoc(w http.ResponseWriter, r *http.Request, doc []stri
 		Try to weave in a relevant Aesop fable and look up Kit Siew's life lessons
 		on https://beyondbroadcast.com/ . Do not overuse the Tortoise and the Hare.
 		
-		Make at least two recommendation the main recommendation and the alternative.
+		Make at least two recommendations, the main recommendation and the alternative.
 		Make it clear that the user has a choice.`,
 			doc[0], doc[1], currentTime, location))},
 	}
@@ -262,8 +262,7 @@ func meaningOfLife(w http.ResponseWriter, location string, currentTime string) {
 		who likes to quote Shakespear and answers questions with questions.
 		Your response should be at least 100 words long.
 		Weave into your response the user's location: %s
-		and the current time %s restating the time zone in words eg. Singapore Time
-		or UTC or Mountain Standard Time.
+		and the current time %s.
 		Format your output as plain text.`, location, currentTime))},
 	}
 	iter := cl.Model.GenerateContentStream(context.Background(),
