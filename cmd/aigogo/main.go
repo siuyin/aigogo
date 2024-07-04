@@ -43,7 +43,7 @@ type mapResponse struct {
 }
 
 func main() {
-	// 	http.Handle("/", http.FileServer(http.Dir("./internal/public"))) // DEV
+	// http.Handle("/", http.FileServer(http.Dir("./internal/public")))  // DEV
 	http.Handle("/", http.FileServer(http.FS(public.Content))) // PROD
 
 	retrievalFunc := func(w http.ResponseWriter, r *http.Request) {
@@ -170,6 +170,21 @@ func augmentGenerationWithDoc(w http.ResponseWriter, r *http.Request, doc []stri
 		and also the user's location: %s. This is particulary important when your response
 		includes an outdoor activity as the elderly may trip and fall in the dark.
 
+		Here is you determine if locations mentioned in the RESOURCES are relevant or not:
+
+		1. The locations mentioned in the RESOURCES are all in Singapore.
+		2. Compare the location of the user and check if they are also in Singpore.
+		3. If the user's location is in Singapore, then the locations mentioned in the RESOURCES
+		are relevant.
+		4. If the user's location is not in Singapore, then the locations mentioned in the
+		RESOURCES are not relevant and you must ignore locations mentioned in the
+		RESOURCES.
+
+		Note that locations in the RESOURCES also apply to locations of restaurants and
+		eating places. They are all in Singapore. Thus if you are recommending
+		restaurants and the user's location is not in Singapore you must ignore the
+		restaurants mentioned in the RESOURCES.
+
 		Also look up opening hours if you have the data when recommending trips to places
 		to visit or when recommending restaurants or food outlets.
 
@@ -227,7 +242,7 @@ func decodeLocationAPIResp(res *http.Response, mapRes *mapResponse) *mapResponse
 	return mapRes
 }
 func loadDocuments() []chromem.Document {
-	// 	f, err := os.Open("./internal/vecdb/embeddings.gob") // DEV
+	// f, err := os.Open("./internal/vecdb/embeddings.gob") // DEV
 	f, err := vecdb.Content.Open("embeddings.gob") // PROD
 	if err != nil {
 		log.Fatal(err)
