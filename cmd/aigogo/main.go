@@ -16,8 +16,6 @@ import (
 
 	"github.com/google/generative-ai-go/genai"
 	"github.com/philippgille/chromem-go"
-	"github.com/siuyin/aigogo/cmd/aigogo/internal/public"
-	"github.com/siuyin/aigogo/cmd/aigogo/internal/vecdb"
 	"github.com/siuyin/aigotut/client"
 	"github.com/siuyin/aigotut/emb"
 	"github.com/siuyin/dflt"
@@ -43,8 +41,8 @@ type mapResponse struct {
 }
 
 func main() {
-	// http.Handle("/", http.FileServer(http.Dir("./internal/public")))  // DEV
-	http.Handle("/", http.FileServer(http.FS(public.Content))) // PROD
+// 	http.Handle("/", http.FileServer(http.Dir("./internal/public"))) // DEV
+	 	http.Handle("/", http.FileServer(http.FS(public.Content))) // PROD
 
 	retrievalFunc := func(w http.ResponseWriter, r *http.Request) {
 		qry := r.FormValue("userPrompt")
@@ -84,6 +82,7 @@ func main() {
 	}
 	http.HandleFunc("/endpoint", h2)
 
+	log.Println("starting web server")
 	log.Fatal(http.ListenAndServe(":"+dflt.EnvString("HTTP_PORT", "8080"), nil))
 }
 
@@ -148,12 +147,28 @@ func augmentGenerationWithDoc(w http.ResponseWriter, r *http.Request, doc []stri
 
 		RESOURCE 2: %s
 
-		Prioritize include options from the above resources where relevent. Where there
+		Prioritize including suggestions from the above resources if and only if they
+		are relevent. Where there
 		are multiple equally feasible options, pick one at random. If you feel
 		one is particularly relevant explain why the reasoning behind your choice.
 
-		If a RESOURCE has safety relevant warnings like "it is not well lit" priorities
-		this infomation and do not express your own opinion. Stick to the facts.
+		Here is how you determine if locations of places and restaurants
+		mentioned in the RESOURCES are relevant or not:
+
+		1. The locations mentioned in the RESOURCES are all in Singapore.
+
+		2. Compare the location of the user and check if they are also in Singpore.
+		
+		3. If the user's location is in Singapore, then the locations mentioned in the RESOURCES
+		are relevant.
+		
+		4. If the user's location is not in Singapore, then the locations (including parks,
+		nature reserves, restaurants etc.) mentioned in the
+		RESOURCES are not relevant and you MUST ignore those locations mentioned in the
+		RESOURCES.
+
+		If a RESOURCE has safety relevant warnings like "it is not well lit" you must
+		adhere to this infomation and do not express your own opinion. Stick to the facts.
 
 		If a RESOURCE is not relevant to the user's question, you may ignore its contents.
 
@@ -170,21 +185,6 @@ func augmentGenerationWithDoc(w http.ResponseWriter, r *http.Request, doc []stri
 		and also the user's location: %s. This is particulary important when your response
 		includes an outdoor activity as the elderly may trip and fall in the dark.
 
-		Here is you determine if locations mentioned in the RESOURCES are relevant or not:
-
-		1. The locations mentioned in the RESOURCES are all in Singapore.
-		2. Compare the location of the user and check if they are also in Singpore.
-		3. If the user's location is in Singapore, then the locations mentioned in the RESOURCES
-		are relevant.
-		4. If the user's location is not in Singapore, then the locations mentioned in the
-		RESOURCES are not relevant and you must ignore locations mentioned in the
-		RESOURCES.
-
-		Note that locations in the RESOURCES also apply to locations of restaurants and
-		eating places. They are all in Singapore. Thus if you are recommending
-		restaurants and the user's location is not in Singapore you must ignore the
-		restaurants mentioned in the RESOURCES.
-
 		Also look up opening hours if you have the data when recommending trips to places
 		to visit or when recommending restaurants or food outlets.
 
@@ -200,6 +200,7 @@ func augmentGenerationWithDoc(w http.ResponseWriter, r *http.Request, doc []stri
 			doc[0], doc[1], currentTime, location))},
 	}
 
+	log.Println("calling generate content stream with: ", userPrompt)
 	iter := cl.Model.GenerateContentStream(context.Background(),
 		genai.Text(userPrompt))
 	for {
@@ -242,8 +243,8 @@ func decodeLocationAPIResp(res *http.Response, mapRes *mapResponse) *mapResponse
 	return mapRes
 }
 func loadDocuments() []chromem.Document {
-	// f, err := os.Open("./internal/vecdb/embeddings.gob") // DEV
-	f, err := vecdb.Content.Open("embeddings.gob") // PROD
+// 	f, err := os.Open("./internal/vecdb/embeddings.gob") // DEV
+	 	f, err := vecdb.Content.Open("embeddings.gob") // PROD
 	if err != nil {
 		log.Fatal(err)
 	}
