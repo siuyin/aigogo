@@ -18,3 +18,16 @@ pre {
     border: 0;
     background-color: transparent;
 }
+
+.radio-container {
+    display: flex;
+}
+
+/* input[type="radio"] {
+    width: 20px;
+    height: 20px;
+} */
+
+label {
+    margin-right: 10px;
+}
