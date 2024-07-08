@@ -52,7 +52,7 @@ func main() {
 
 	retrievalFunc := func(w http.ResponseWriter, r *http.Request) {
 		qry := r.FormValue("userPrompt")
-		doc := retrieveDocsForAugmentation(qry)
+		doc := retrieveDocsForAugmentation(r,qry)
 		//writeRetrievedDocs(w, doc)
 		augmentGenerationWithDoc(w, r, doc)
 	}
@@ -266,9 +266,9 @@ func loadDocuments() []chromem.Document {
 
 func addDoc(docs []chromem.Document, rec *rag.Doc) []chromem.Document {
 	d := chromem.Document{
-		ID:      rec.ID,
-		Content: rec.Title + " | " + rec.Content,
-		Metadata: map[string]string{"context":rec.Context},
+		ID:       rec.ID,
+		Content:  rec.Title + " | " + rec.Content,
+		Metadata: map[string]string{"context": rec.Context},
 	}
 	if os.Getenv("DEBUG") != "" {
 		log.Println("adding: ", rec.Title)
@@ -314,7 +314,7 @@ func fPrintResponse(w http.ResponseWriter, resp *genai.GenerateContentResponse) 
 	}
 }
 
-func retrieveDocsForAugmentation(qry string) []string {
+func retrieveDocsForAugmentation(r *http.Request,qry string) []string {
 	ctx := context.Background()
 	res, err := em.EmbedContent(ctx, genai.Text(qry))
 	if err != nil {
@@ -322,7 +322,8 @@ func retrieveDocsForAugmentation(qry string) []string {
 	}
 
 	numResults := 2
-	qres, err := collection.QueryEmbedding(ctx, res.Embedding.Values, numResults, nil, nil)
+	usrCtx := r.FormValue("ctx")
+	qres, err := collection.QueryEmbedding(ctx, res.Embedding.Values, numResults, map[string]string{"context": usrCtx}, nil)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -367,4 +368,3 @@ func tzLoc(latlng string) *time.Location {
 	}
 	return loc
 }
-

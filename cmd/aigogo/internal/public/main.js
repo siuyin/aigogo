@@ -61,7 +61,8 @@ function getDayPart(currentTime) {
 async function retrieveDocsForAugmentation() {
     const loc = encodeURIComponent(sessionStorage.getItem("neighborhood"));
     let usrQry = encodeURIComponent(userPrompt.value);
-    const url = `/retr?userPrompt=${usrQry}&loc=${loc}&latlng=${sessionStorage.getItem("latlng")}`;
+    let ctx = encodeURIComponent(sessionStorage.getItem("context"));
+    const url = `/retr?userPrompt=${usrQry}&loc=${loc}&latlng=${sessionStorage.getItem("latlng")}&ctx=${ctx}`;
     //const url = `http://localhost:8080/retr?userPrompt=${usrQry}&loc=${loc}&latlng=${sessionStorage.getItem("latlng")}`;
     //     const url = `https://aigogo-onsvm4sjba-uc.a.run.app/retr?userPrompt=${usrQry}&loc=${loc}&latlng=${sessionStorage.getItem("latlng")}`
 
@@ -97,3 +98,21 @@ async function molStreamer() {
         modelResponse.innerHTML += (dec.decode(chunk));
     }
 }
+
+const ctxGeneral = document.getElementById("General");
+const ctxSingapore = document.getElementById("Singapore");
+const ctxPetalingJaya = document.getElementById("PetalingJaya");
+const ctxUkayHeights = document.getElementById("UkayHeights");
+const ctxBatam = document.getElementById("Batam");
+
+ctxGeneral.addEventListener("change", () => { recordSelectedContext("General") });
+ctxSingapore.addEventListener("change", () => { recordSelectedContext("Singapore") });
+ctxPetalingJaya.addEventListener("change", () => { recordSelectedContext("Petaling Jaya") });
+ctxUkayHeights.addEventListener("change", () => { recordSelectedContext("Ukay Heights") });
+ctxBatam.addEventListener("change", () => { recordSelectedContext("Batam") });
+
+function recordSelectedContext(ctx) { 
+    sessionStorage.setItem("context",ctx);
+    console.log(`set context to ${ctx}`);
+}
+recordSelectedContext("General");
