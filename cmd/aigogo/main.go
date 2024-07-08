@@ -18,8 +18,8 @@ import (
 	"github.com/philippgille/chromem-go"
 	"github.com/siuyin/aigogo/cmd/aigogo/internal/public"
 	"github.com/siuyin/aigogo/cmd/aigogo/internal/vecdb"
+	"github.com/siuyin/aigogo/rag"
 	"github.com/siuyin/aigotut/client"
-	"github.com/siuyin/aigotut/emb"
 	"github.com/siuyin/dflt"
 	"google.golang.org/api/iterator"
 	"googlemaps.github.io/maps"
@@ -93,6 +93,9 @@ func main() {
 }
 
 func init() {
+	if os.Getenv("API_KEY") == "" || os.Getenv("MAPS_API_KEY") == "" { // we are in testing mode
+		return
+	}
 	cl = client.New()
 	em = initEmbeddingClient()
 	collection = initDB()
@@ -158,21 +161,6 @@ func augmentGenerationWithDoc(w http.ResponseWriter, r *http.Request, doc []stri
 		are multiple equally feasible options, pick one at random. If you feel
 		one is particularly relevant explain why the reasoning behind your choice.
 
-		Here is how you determine if locations of places and restaurants
-		mentioned in the RESOURCES are relevant or not:
-
-		1. The locations mentioned in the RESOURCES are all in Singapore.
-
-		2. Compare the location of the user and check if they are also in Singpore.
-		
-		3. If the user's location is in Singapore, then the locations mentioned in the RESOURCES
-		are relevant.
-		
-		4. If the user's location is not in Singapore, then the locations (including parks,
-		nature reserves, restaurants etc.) mentioned in the
-		RESOURCES are not relevant and you MUST ignore those locations mentioned in the
-		RESOURCES.
-
 		If a RESOURCE has safety relevant warnings like "it is not well lit" you must
 		adhere to this infomation and do not express your own opinion. Stick to the facts.
 
@@ -183,16 +171,12 @@ func augmentGenerationWithDoc(w http.ResponseWriter, r *http.Request, doc []stri
 		look up what you know about the relevant song title's lyrics and include some
 		portion of the lyrics into your response.
 
-		If you want to credit a RESOURCE, credit Kit Siew. She wrote the RESOURCES. DO NOT
-		quote RESOURCE 1 or RESOURCE 2 directly -- they are for your internal use and
+		DO NOT quote RESOURCE 1 or RESOURCE 2 directly -- they are for your internal use and
 		reference.
 
 		When formulating your response consider the current date and time: %s
 		and also the user's location: %s. This is particulary important when your response
 		includes an outdoor activity as the elderly may trip and fall in the dark.
-
-		Also look up opening hours if you have the data when recommending trips to places
-		to visit or when recommending restaurants or food outlets.
 
 		If you are quoting a time or a day part, eg. morning, afternoon, evening,
 		be sure to mention the time together with the
@@ -268,7 +252,7 @@ func loadDocuments() []chromem.Document {
 	}
 	defer f.Close()
 
-	var rec emb.Rec
+	var rec rag.Doc
 	dec := gob.NewDecoder(f)
 	docs := []chromem.Document{}
 	for {
@@ -280,10 +264,14 @@ func loadDocuments() []chromem.Document {
 	return docs
 }
 
-func addDoc(docs []chromem.Document, rec *emb.Rec) []chromem.Document {
+func addDoc(docs []chromem.Document, rec *rag.Doc) []chromem.Document {
 	d := chromem.Document{
 		ID:      rec.ID,
 		Content: rec.Title + " | " + rec.Content,
+		Metadata: map[string]string{"context":rec.Context},
+	}
+	if os.Getenv("DEBUG") != "" {
+		log.Println("adding: ", rec.Title)
 	}
 	d.Embedding = append(d.Embedding, rec.Embedding...)
 	docs = append(docs, d)
@@ -379,3 +367,4 @@ func tzLoc(latlng string) *time.Location {
 	}
 	return loc
 }
+
