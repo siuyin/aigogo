@@ -14,9 +14,28 @@ import (
 )
 
 func main() {
-	fn := dflt.EnvString("RAGCSV", "/home/siuyin/Downloads/aigogo data - General.csv")
-	dat := loadRAGCSV(fn)
+	dat := loadRAGCSV()
+	res:=batchEmbed(dat)
+	outputEmbeddingsGOB(dat,res)
+}
 
+func loadRAGCSV() [][]string {
+	fn := dflt.EnvString("RAGCSV", "/home/siuyin/Downloads/aigogo data - General.csv")
+	f, err := os.Open(fn)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer f.Close()
+
+	c := csv.NewReader(f)
+	dat, err := c.ReadAll()
+	if err != nil {
+		log.Fatal(err)
+	}
+	return dat
+}
+
+func batchEmbed(dat [][]string) *genai.BatchEmbedContentsResponse {
 	client.ModelName = "text-embedding-004"
 	cl := client.New()
 	defer cl.Close()
@@ -32,7 +51,11 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	return res
 
+}
+
+func outputEmbeddingsGOB(dat [][]string, res *genai.BatchEmbedContentsResponse) {
 	o, err := os.Create("../aigogo/internal/vecdb/embeddings.gob")
 	if err != nil {
 		log.Fatal(err)
@@ -54,18 +77,5 @@ func main() {
 			log.Fatal(err)
 		}
 	}
-}
-func loadRAGCSV(fn string) [][]string {
-	f, err := os.Open(fn)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer f.Close()
 
-	c := csv.NewReader(f)
-	dat, err := c.ReadAll()
-	if err != nil {
-		log.Fatal(err)
-	}
-	return dat
 }
