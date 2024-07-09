@@ -52,7 +52,7 @@ func main() {
 
 	retrievalFunc := func(w http.ResponseWriter, r *http.Request) {
 		qry := r.FormValue("userPrompt")
-		doc := retrieveDocsForAugmentation(r,qry)
+		doc := retrieveDocsForAugmentation(r, qry)
 		//writeRetrievedDocs(w, doc)
 		augmentGenerationWithDoc(w, r, doc)
 	}
@@ -97,6 +97,12 @@ func init() {
 		return
 	}
 	cl = client.New()
+	temp := float32(0.3)
+	cl.Model.SafetySettings = []*genai.SafetySetting{
+		// {Category: genai.HarmCategoryDangerousContent, Threshold: genai.HarmBlockOnlyHigh},
+		// {Category: genai.HarmCategoryMedical,Threshold: genai.HarmBlockMediumAndAbove},
+	}
+	cl.Model.GenerationConfig.Temperature = &temp
 	em = initEmbeddingClient()
 	collection = initDB()
 	mapsClient = initMapsClient()
@@ -175,8 +181,10 @@ func augmentGenerationWithDoc(w http.ResponseWriter, r *http.Request, doc []stri
 		reference.
 
 		When formulating your response consider the current date and time: %s
+		timezone: %s,
 		and also the user's location: %s. This is particulary important when your response
 		includes an outdoor activity as the elderly may trip and fall in the dark.
+		You must always mention the time and timezone in your response.
 
 		If you are quoting a time or a day part, eg. morning, afternoon, evening,
 		be sure to mention the time together with the
@@ -187,7 +195,7 @@ func augmentGenerationWithDoc(w http.ResponseWriter, r *http.Request, doc []stri
 		
 		Make at least two recommendations, the main recommendation and the alternative.
 		Make it clear that the user has a choice.`,
-			doc[0], doc[1], currentTime, location))},
+			doc[0], doc[1], currentTime, tzLoc(latlng).String(), location))},
 	}
 
 	log.Println("calling generate content stream with: ", userPrompt)
@@ -202,7 +210,6 @@ func augmentGenerationWithDoc(w http.ResponseWriter, r *http.Request, doc []stri
 			io.WriteString(w, "<p>hmm.. apparently I have an issue:"+err.Error())
 			return
 		}
-
 		fPrintResponse(w, resp)
 	}
 }
@@ -314,7 +321,7 @@ func fPrintResponse(w http.ResponseWriter, resp *genai.GenerateContentResponse) 
 	}
 }
 
-func retrieveDocsForAugmentation(r *http.Request,qry string) []string {
+func retrieveDocsForAugmentation(r *http.Request, qry string) []string {
 	ctx := context.Background()
 	res, err := em.EmbedContent(ctx, genai.Text(qry))
 	if err != nil {
