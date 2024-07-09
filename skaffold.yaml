@@ -3,6 +3,6 @@ kind: Config
 
 build:
   artifacts:
-  - image: siuyin/junk
+  - image: siuyin/aigogo
   local:
     push: true
