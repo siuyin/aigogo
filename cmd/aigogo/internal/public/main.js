@@ -103,13 +103,14 @@ const ctxGeneral = document.getElementById("General");
 const ctxSingapore = document.getElementById("Singapore");
 const ctxPetalingJaya = document.getElementById("PetalingJaya");
 const ctxUkayHeights = document.getElementById("UkayHeights");
-const ctxBatam = document.getElementById("Batam");
+const ctxPlants= document.getElementById("Plants");
 
 ctxGeneral.addEventListener("change", () => { recordSelectedContext("General") });
 ctxSingapore.addEventListener("change", () => { recordSelectedContext("Singapore") });
 ctxPetalingJaya.addEventListener("change", () => { recordSelectedContext("Petaling Jaya") });
 ctxUkayHeights.addEventListener("change", () => { recordSelectedContext("Ukay Heights") });
 ctxBatam.addEventListener("change", () => { recordSelectedContext("Batam") });
+ctxPlants.addEventListener("change", () => { recordSelectedContext("Plants") });
 
 function recordSelectedContext(ctx) { 
     sessionStorage.setItem("context",ctx);
