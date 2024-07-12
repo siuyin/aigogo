@@ -58,6 +58,7 @@ function getDayPart(currentTime) {
         return "Night";
     }
 }
+import { marked } from "https://cdn.jsdelivr.net/npm/marked/lib/marked.esm.js";
 async function retrieveDocsForAugmentation() {
     const loc = encodeURIComponent(sessionStorage.getItem("neighborhood"));
     let usrQry = encodeURIComponent(userPrompt.value);
@@ -72,7 +73,7 @@ async function retrieveDocsForAugmentation() {
         if (!resp.ok) { throw new Error(`response status: ${resp.status}`) }
         const respTxt = await resp.text();
         sessionStorage.setItem("ragDocs", respTxt);
-        embeddingResponse.innerHTML = respTxt;
+        embeddingResponse.innerHTML = marked.parse(respTxt);
         modelResponse.innerText = "";
     } catch (err) {
         console.error(err.message);
@@ -100,10 +101,11 @@ async function molStreamer() {
 }
 
 const selectedContext = document.getElementById("selected-context");
-selectedContext.addEventListener("change",(ev) => {recordSelectedContext(ev.target.value)})
+selectedContext.addEventListener("change", (ev) => { recordSelectedContext(ev.target.value) })
 
-function recordSelectedContext(ctx) { 
-    sessionStorage.setItem("context",ctx);
+function recordSelectedContext(ctx) {
+    sessionStorage.setItem("context", ctx);
     console.log(`set context to ${ctx}`);
 }
 recordSelectedContext("General");
+
