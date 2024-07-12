@@ -21,21 +21,17 @@
     </p>
 
     <textarea id="userPrompt" name=""></textarea>
-    <div class="radio-container">
-        Context: 
-        <input type="radio" name="context" id="General" value="General" checked="true">
-        <label for="general">General</label>
-        <input type="radio" name="context" id="Singapore" value="Singapore">
-        <label for="Singapore">Singapore</label>
-        <input type="radio" name="context" id="PetalingJaya" value="Petaling Jaya">
-        <label for="Petaling Jaya">Petaling Jaya</label>
-        <input type="radio" name="context" id="UkayHeights" value="Ukay Heights">
-        <label for="Ukay Heights">Ukay Heights</label>
-        <input type="radio" name="context" id="Batam" value="Batam">
-        <label for="Batam">Batam</label>
-        <input type="radio" name="context" id="Plants" value="Plants">
-        <label for="Plants">Plants</label>
-    </div>
+    <p>Context:
+        <select name="context" id="selected-context">
+            <option value="General" selected>General</option>
+            <option value="Singapore">Singapore</option>
+            <option value="Petaling Jaya">Petaling Jaya</option>
+            <option value="Ukay Heights">Ukay Heights</option>
+            <option value="Batam">Batam</option>
+            <option value="Ipoh">Ipoh</option>
+            <option value="Plants">Plants</option>
+        </select>
+    </p>
     <button id="userSubmit" name="userSubmit">Ask AiGoGo</button>
 
     <div id="embeddingResponse"></div>
