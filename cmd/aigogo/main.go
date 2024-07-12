@@ -53,6 +53,10 @@ func main() {
 	retrievalFunc := func(w http.ResponseWriter, r *http.Request) {
 		qry := r.FormValue("userPrompt")
 		doc := retrieveDocsForAugmentation(r, qry)
+		if len(doc) == 0 {
+			io.WriteString(w, "No relevant documents found")
+			return
+		}
 		//writeRetrievedDocs(w, doc)
 		augmentGenerationWithDoc(w, r, doc)
 	}
