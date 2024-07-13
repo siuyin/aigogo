@@ -69,16 +69,19 @@ async function retrieveDocsForAugmentation() {
 
     embeddingResponse.innerHTML = "working ... give me a few seconds ..."
     try {
-        const resp = await fetch(url);
-        if (!resp.ok) { throw new Error(`response status: ${resp.status}`) }
-        const respTxt = await resp.text();
-        sessionStorage.setItem("ragDocs", respTxt);
-        embeddingResponse.innerHTML = marked.parse(respTxt);
         modelResponse.innerText = "";
+        //await streamToElement(embeddingResponse, url);
+        await fetchAndDisplay(url);
     } catch (err) {
         console.error(err.message);
     }
-
+}
+async function fetchAndDisplay(url) {
+    const resp = await fetch(url);
+    if (!resp.ok) { throw new Error(`response status: ${resp.status}`) }
+    const respTxt = await resp.text();
+    sessionStorage.setItem("ragDocs", respTxt);
+    embeddingResponse.innerHTML = marked.parse(respTxt);
 }
 
 function showStorage() {
@@ -93,11 +96,18 @@ async function molStreamer() {
     modelResponse.innerText = "";
     embeddingResponse.innerHTML = "";
     const url = `/life?loc=${encodeURIComponent(sessionStorage.getItem("neighborhood"))}&latlng=${sessionStorage.getItem("latlng")}`;
+    await streamToElement(modelResponse, url);
+}
+
+async function streamToElement(el, url) {
     const res = await fetch(url);
+    el.innerHTML = "";
     const dec = new TextDecoder("utf-8");
     for await (const chunk of res.body) {
-        modelResponse.innerHTML += (dec.decode(chunk));
+        //el.innerHTML += (marked.parse(dec.decode(chunk)));
+        el.innerHTML += (dec.decode(chunk));
     }
+
 }
 
 const selectedContext = document.getElementById("selected-context");
