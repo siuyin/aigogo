@@ -230,7 +230,7 @@ func getLocationAPIResp(r *http.Request) *http.Response {
 func decodeLocationAPIResp(res *http.Response, mapRes *mapResponse) *mapResponse {
 	dec := json.NewDecoder(res.Body)
 	if err := dec.Decode(&mapRes); err != nil {
-		log.Fatal(err)
+		log.Println(err)
 	}
 
 	res.Body.Close()
