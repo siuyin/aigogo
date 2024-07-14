@@ -32,8 +32,30 @@ const userPrompt = document.getElementById("userPrompt");
 const userSubmit = document.getElementById("userSubmit");
 userSubmit.addEventListener("click", retrieveDocsForAugmentation);
 
+// embeddingResponse is the main RAG response
 const embeddingResponse = document.getElementById("embeddingResponse");
+// modelResponse is the LLM model response to "meaning of life"
 const modelResponse = document.getElementById("modelResponse");
+
+import { marked } from "https://cdn.jsdelivr.net/npm/marked/lib/marked.esm.js";
+async function retrieveDocsForAugmentation() {
+    const loc = encodeURIComponent(sessionStorage.getItem("neighborhood"));
+    let usrQry = encodeURIComponent(userPrompt.value);
+    let ctx = encodeURIComponent(sessionStorage.getItem("context"));
+    const url = `/retr?userPrompt=${usrQry}&loc=${loc}&latlng=${sessionStorage.getItem("latlng")}&ctx=${ctx}`;
+    //const url = `http://localhost:8080/retr?userPrompt=${usrQry}&loc=${loc}&latlng=${sessionStorage.getItem("latlng")}`;
+    //     const url = `https://aigogo-onsvm4sjba-uc.a.run.app/retr?userPrompt=${usrQry}&loc=${loc}&latlng=${sessionStorage.getItem("latlng")}`
+
+    embeddingResponse.innerHTML = "working ... give me a few seconds ..."
+    try {
+        modelResponse.innerText = "";
+        //await streamToElement(embeddingResponse, url);
+        await fetchAndDisplay(url);
+    } catch (err) {
+        console.error(err.message);
+    }
+}
+
 function copyUserPromptToModelResponse() {
     modelResponse.innerHTML = userPrompt.value;
 }
@@ -58,24 +80,7 @@ function getDayPart(currentTime) {
         return "Night";
     }
 }
-import { marked } from "https://cdn.jsdelivr.net/npm/marked/lib/marked.esm.js";
-async function retrieveDocsForAugmentation() {
-    const loc = encodeURIComponent(sessionStorage.getItem("neighborhood"));
-    let usrQry = encodeURIComponent(userPrompt.value);
-    let ctx = encodeURIComponent(sessionStorage.getItem("context"));
-    const url = `/retr?userPrompt=${usrQry}&loc=${loc}&latlng=${sessionStorage.getItem("latlng")}&ctx=${ctx}`;
-    //const url = `http://localhost:8080/retr?userPrompt=${usrQry}&loc=${loc}&latlng=${sessionStorage.getItem("latlng")}`;
-    //     const url = `https://aigogo-onsvm4sjba-uc.a.run.app/retr?userPrompt=${usrQry}&loc=${loc}&latlng=${sessionStorage.getItem("latlng")}`
 
-    embeddingResponse.innerHTML = "working ... give me a few seconds ..."
-    try {
-        modelResponse.innerText = "";
-        //await streamToElement(embeddingResponse, url);
-        await fetchAndDisplay(url);
-    } catch (err) {
-        console.error(err.message);
-    }
-}
 async function fetchAndDisplay(url) {
     const resp = await fetch(url);
     if (!resp.ok) { throw new Error(`response status: ${resp.status}`) }
