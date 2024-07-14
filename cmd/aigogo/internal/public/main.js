@@ -124,3 +124,9 @@ function recordSelectedContext(ctx) {
 }
 recordSelectedContext("General");
 
+const selectedSuggestion = document.getElementById("selected-suggestion");
+selectedSuggestion.addEventListener("change", (ev) =>{ copySelectedSuggestionToUserPrompt(ev.target.value)});
+function copySelectedSuggestionToUserPrompt(prompt) {
+    console.log(prompt);
+    userPrompt.innerText=prompt;
+}
