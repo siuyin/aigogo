@@ -282,7 +282,7 @@ func addDoc(docs []chromem.Document, rec *rag.Doc) []chromem.Document {
 		Metadata: map[string]string{"context": rec.Context},
 	}
 	if os.Getenv("DEBUG") != "" {
-		log.Println("adding: ", rec.Title)
+		log.Println("adding: ", rec.Title, rec.Context)
 	}
 	d.Embedding = append(d.Embedding, rec.Embedding...)
 	docs = append(docs, d)
@@ -341,7 +341,9 @@ func retrieveDocsForAugmentation(r *http.Request, qry string) []string {
 
 	doc := []string{}
 	for i := 0; i < len(qres); i++ {
-		// fmt.Println(qres[i].ID, qres[i].Content)
+		if os.Getenv("DEBUG") != "" {
+			fmt.Println("vector DB:",qres[i].ID, qres[i].Content)
+		}
 		doc = append(doc, qres[i].Content)
 	}
 	return doc

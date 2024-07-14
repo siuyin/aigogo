@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/csv"
 	"encoding/gob"
+	"fmt"
 	"log"
 	"os"
 
@@ -13,10 +14,14 @@ import (
 	"github.com/siuyin/dflt"
 )
 
+const batchSize = 100
+
 func main() {
 	dat := loadRAGCSV()
-	res:=batchEmbed(dat)
-	outputEmbeddingsGOB(dat,res)
+	res := batchEmbedNew(batchSize, dat[1:])
+	outputEmbeddingsGOBNew(dat[1:], res)
+	// res := batchEmbed(dat)
+	// outputEmbeddingsGOB(dat, res)
 }
 
 func loadRAGCSV() [][]string {
@@ -35,6 +40,19 @@ func loadRAGCSV() [][]string {
 	return dat
 }
 
+func batchEmbedNew(batchSize int, dat [][]string) []*genai.BatchEmbedContentsResponse {
+	res := []*genai.BatchEmbedContentsResponse{}
+	for i := 0; i < len(dat); i += batchSize {
+		end := i + batchSize
+		if end > len(dat) {
+			end = len(dat)
+		}
+		bat := dat[i:end]
+		r := batchEmbed(bat)
+		res = append(res, r)
+	}
+	return res
+}
 func batchEmbed(dat [][]string) *genai.BatchEmbedContentsResponse {
 	client.ModelName = "text-embedding-004"
 	cl := client.New()
@@ -55,6 +73,33 @@ func batchEmbed(dat [][]string) *genai.BatchEmbedContentsResponse {
 
 }
 
+func outputEmbeddingsGOBNew(dat [][]string, res []*genai.BatchEmbedContentsResponse) {
+	o, err := os.Create("../aigogo/internal/vecdb/embeddings.gob")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer o.Close()
+
+	en := gob.NewEncoder(o)
+	i := 0
+	for _, v := range res {
+		for _, w := range v.Embeddings {
+			r := rag.Doc{}
+			r.ID = dat[i][0]
+			r.Title = dat[i][1]
+			r.Content = dat[i][2]
+			r.Context = dat[i][3]
+			r.Embedding = w.Values
+			if os.Getenv("DEBUG") != "" {
+				fmt.Println(r.ID, r.Title, i)
+			}
+			if err := en.Encode(r); err != nil {
+				log.Fatal(err)
+			}
+			i += 1
+		}
+	}
+}
 func outputEmbeddingsGOB(dat [][]string, res *genai.BatchEmbedContentsResponse) {
 	o, err := os.Create("../aigogo/internal/vecdb/embeddings.gob")
 	if err != nil {
