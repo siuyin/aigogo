@@ -3,7 +3,6 @@ module github.com/siuyin/aigogo
 go 1.22.1
 
 require (
-	cloud.google.com/go/vertexai v0.12.0
 	github.com/google/generative-ai-go v0.14.0
 	github.com/philippgille/chromem-go v0.6.0
 	github.com/siuyin/aigotut v0.0.0-20240630023639-0f35cfe90fce
@@ -15,11 +14,9 @@ require (
 require (
 	cloud.google.com/go v0.114.0 // indirect
 	cloud.google.com/go/ai v0.6.0 // indirect
-	cloud.google.com/go/aiplatform v1.68.0 // indirect
 	cloud.google.com/go/auth v0.5.1 // indirect
 	cloud.google.com/go/auth/oauth2adapt v0.2.2 // indirect
 	cloud.google.com/go/compute/metadata v0.3.0 // indirect
-	cloud.google.com/go/iam v1.1.8 // indirect
 	cloud.google.com/go/longrunning v0.5.7 // indirect
 	github.com/felixge/httpsnoop v1.0.4 // indirect
 	github.com/go-logr/logr v1.4.1 // indirect
