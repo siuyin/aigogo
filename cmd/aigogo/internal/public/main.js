@@ -49,8 +49,8 @@ async function retrieveDocsForAugmentation() {
     embeddingResponse.innerHTML = "working ... give me a few seconds ..."
     try {
         modelResponse.innerText = "";
-        //await streamToElement(embeddingResponse, url);
-        await fetchAndDisplay(url);
+        await streamToElement(embeddingResponse, url);
+        // await fetchAndDisplay(url);
     } catch (err) {
         console.error(err.message);
     }
@@ -106,13 +106,14 @@ async function molStreamer() {
 
 async function streamToElement(el, url) {
     const res = await fetch(url);
+    let tmp = "";
     el.innerHTML = "";
     const dec = new TextDecoder("utf-8");
     for await (const chunk of res.body) {
-        //el.innerHTML += (marked.parse(dec.decode(chunk)));
         el.innerHTML += (dec.decode(chunk));
+        tmp += (dec.decode(chunk));
     }
-
+    el.innerHTML = marked.parse(tmp);
 }
 
 const selectedContext = document.getElementById("selected-context");
@@ -125,8 +126,8 @@ function recordSelectedContext(ctx) {
 recordSelectedContext("General");
 
 const selectedSuggestion = document.getElementById("selected-suggestion");
-selectedSuggestion.addEventListener("change", (ev) =>{ copySelectedSuggestionToUserPrompt(ev.target.value)});
+selectedSuggestion.addEventListener("change", (ev) => { copySelectedSuggestionToUserPrompt(ev.target.value) });
 function copySelectedSuggestionToUserPrompt(prompt) {
-    userPrompt.value=prompt;
+    userPrompt.value = prompt;
     console.log(prompt);
 }
