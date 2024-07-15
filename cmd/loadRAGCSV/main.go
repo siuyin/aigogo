@@ -14,14 +14,12 @@ import (
 	"github.com/siuyin/dflt"
 )
 
-const batchSize = 100
+const batchSize = 90
 
 func main() {
 	dat := loadRAGCSV()
-	res := batchEmbedNew(batchSize, dat[1:])
-	outputEmbeddingsGOBNew(dat[1:], res)
-	// res := batchEmbed(dat)
-	// outputEmbeddingsGOB(dat, res)
+	res := embed(batchSize, dat[1:])
+	outputEmbeddingsGOB(dat[1:], res)
 }
 
 func loadRAGCSV() [][]string {
@@ -40,7 +38,7 @@ func loadRAGCSV() [][]string {
 	return dat
 }
 
-func batchEmbedNew(batchSize int, dat [][]string) []*genai.BatchEmbedContentsResponse {
+func embed(batchSize int, dat [][]string) []*genai.BatchEmbedContentsResponse {
 	res := []*genai.BatchEmbedContentsResponse{}
 	for i := 0; i < len(dat); i += batchSize {
 		end := i + batchSize
@@ -48,6 +46,7 @@ func batchEmbedNew(batchSize int, dat [][]string) []*genai.BatchEmbedContentsRes
 			end = len(dat)
 		}
 		bat := dat[i:end]
+		fmt.Println(len(bat),i,end)
 		r := batchEmbed(bat)
 		res = append(res, r)
 	}
@@ -61,7 +60,7 @@ func batchEmbed(dat [][]string) *genai.BatchEmbedContentsResponse {
 	ctx := context.Background()
 	em := cl.Client.EmbeddingModel(client.ModelName)
 	b := em.NewBatch()
-	for _, v := range dat[1:] {
+	for _, v := range dat {
 		b.AddContentWithTitle(v[1], genai.Text(v[2]))
 	}
 
@@ -73,7 +72,7 @@ func batchEmbed(dat [][]string) *genai.BatchEmbedContentsResponse {
 
 }
 
-func outputEmbeddingsGOBNew(dat [][]string, res []*genai.BatchEmbedContentsResponse) {
+func outputEmbeddingsGOB(dat [][]string, res []*genai.BatchEmbedContentsResponse) {
 	o, err := os.Create("../aigogo/internal/vecdb/embeddings.gob")
 	if err != nil {
 		log.Fatal(err)
@@ -83,6 +82,7 @@ func outputEmbeddingsGOBNew(dat [][]string, res []*genai.BatchEmbedContentsRespo
 	en := gob.NewEncoder(o)
 	i := 0
 	for _, v := range res {
+		fmt.Println(len(v.Embeddings))
 		for _, w := range v.Embeddings {
 			r := rag.Doc{}
 			r.ID = dat[i][0]
@@ -99,28 +99,4 @@ func outputEmbeddingsGOBNew(dat [][]string, res []*genai.BatchEmbedContentsRespo
 			i += 1
 		}
 	}
-}
-func outputEmbeddingsGOB(dat [][]string, res *genai.BatchEmbedContentsResponse) {
-	o, err := os.Create("../aigogo/internal/vecdb/embeddings.gob")
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer o.Close()
-
-	en := gob.NewEncoder(o)
-	for i, v := range dat[1:] {
-		r := rag.Doc{}
-		r.ID = v[0]
-		r.Title = v[1]
-		r.Content = v[2]
-		r.Context = v[3]
-		r.Embedding = res.Embeddings[i].Values
-		if os.Getenv("DEBUG") != "" {
-			log.Println(r.ID, r.Title, i)
-		}
-		if err := en.Encode(r); err != nil {
-			log.Fatal(err)
-		}
-	}
-
 }
