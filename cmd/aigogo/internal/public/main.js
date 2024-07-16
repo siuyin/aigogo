@@ -6,6 +6,7 @@ if (!("geolocation" in navigator)) {
 navigator.geolocation.getCurrentPosition((position) => {
     geoCoords.innerText = `I see you are roughly located at coordinates: (${position.coords.latitude}, ${position.coords.longitude})`;
     updateNeighborhood(position.coords.latitude, position.coords.longitude);
+    weatherForecast(position.coords.latitude, position.coords.longitude);
     sessionStorage.setItem("latlng", `${position.coords.latitude},${position.coords.longitude}`);
 });
 
@@ -20,7 +21,18 @@ async function updateNeighborhood(lat, lng) {
     } catch (err) {
         console.error(err.message);
     }
+}
 
+async function weatherForecast(lat, lng) {
+    const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}&hourly=temperature_2m,apparent_temperature,precipitation_probability&forecast_hours=6&timezone=auto`;
+    try {
+        const resp = await fetch(url);
+        if (!resp.ok) { throw new Error(`response status: ${resp.status}`) }
+        const respJSON = await resp.text();
+        sessionStorage.setItem("weatherForecastJSON", respJSON);
+    } catch (err) {
+        console.error(err.message);
+    }
 }
 
 const currentTime = document.getElementById("currentTime");
@@ -40,9 +52,8 @@ async function retrieveDocsForAugmentation() {
     const loc = encodeURIComponent(sessionStorage.getItem("neighborhood"));
     let usrQry = encodeURIComponent(userPrompt.value);
     let ctx = encodeURIComponent(sessionStorage.getItem("context"));
-    const url = `/retr?userPrompt=${usrQry}&loc=${loc}&latlng=${sessionStorage.getItem("latlng")}&ctx=${ctx}`;
-    //const url = `http://localhost:8080/retr?userPrompt=${usrQry}&loc=${loc}&latlng=${sessionStorage.getItem("latlng")}`;
-    //     const url = `https://aigogo-onsvm4sjba-uc.a.run.app/retr?userPrompt=${usrQry}&loc=${loc}&latlng=${sessionStorage.getItem("latlng")}`
+    let weather = encodeURIComponent(sessionStorage.getItem("weatherForecastJSON"));
+    const url = `/retr?userPrompt=${usrQry}&loc=${loc}&latlng=${sessionStorage.getItem("latlng")}&ctx=${ctx}&weather=${weather}`;
 
     embeddingResponse.innerHTML = "working ... give me a few seconds ..."
     try {

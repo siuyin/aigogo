@@ -153,6 +153,7 @@ func augmentGenerationWithDoc(w http.ResponseWriter, r *http.Request, doc []stri
 	userPrompt := r.FormValue("userPrompt")
 	location := r.FormValue("loc")
 	latlng := r.FormValue("latlng")
+	weatherJSON := r.FormValue("weather")
 	currentTime := time.Now().In(tzLoc(latlng)).Format("Monday, 03:04PM, 2 January 2006")
 
 	cl.Model.SystemInstruction = &genai.Content{
@@ -191,6 +192,14 @@ func augmentGenerationWithDoc(w http.ResponseWriter, r *http.Request, doc []stri
 		includes an outdoor activity as the elderly may trip and fall in the dark.
 		You must always mention the time and timezone in your response.
 
+		Evaluate the following weather forecast JSON:
+		%s
+
+		If the user is contemplating an outdoor activity you must provide 
+		a summary of your interpretation of the weather forecast that
+		includes actual temperature range, perceived temperature range and chance of
+		percipitation as a percentage.
+
 		If you are quoting a time or a day part, eg. morning, afternoon, evening,
 		be sure to mention the time together with the
 		long form timezone (eg. Singapore Time or Mountain Standard Time).
@@ -200,7 +209,7 @@ func augmentGenerationWithDoc(w http.ResponseWriter, r *http.Request, doc []stri
 		
 		Make at least two recommendations, the main recommendation and the alternative.
 		Make it clear that the user has a choice.`,
-			doc[0], doc[1], currentTime, tzLoc(latlng).String(), location))},
+			doc[0], doc[1], currentTime, tzLoc(latlng).String(), location, weatherJSON))},
 	}
 
 	log.Println("calling generate content stream with: ", userPrompt)
