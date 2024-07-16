@@ -110,6 +110,7 @@ func init() {
 	em = initEmbeddingClient()
 	collection = initDB()
 	mapsClient = initMapsClient()
+	log.Println("application initialised")
 }
 
 func initEmbeddingClient() *genai.EmbeddingModel {
