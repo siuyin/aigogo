@@ -233,7 +233,7 @@ func getLocationAPIResp(r *http.Request) *http.Response {
 	latlng := r.FormValue("latlng")
 	res, err := http.Get(fmt.Sprintf("https://maps.googleapis.com/maps/api/geocode/json?latlng=%s&result_type=street_address&key=%s", latlng, key))
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
 	}
 	return res
 }
