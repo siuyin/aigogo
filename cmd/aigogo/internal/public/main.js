@@ -11,8 +11,6 @@ navigator.geolocation.getCurrentPosition((position) => {
 
 async function updateNeighborhood(lat, lng) {
     const url = `/loc?latlng=${lat},${lng}`;
-    //const url = `http://localhost:8080/loc?latlng=${lat},${lng}`; 
-    //     const url = `https://aigogo-onsvm4sjba-uc.a.run.app/loc?latlng=${lat},${lng}` 
     try {
         const resp = await fetch(url);
         if (!resp.ok) { throw new Error(`response status: ${resp.status}`) }
