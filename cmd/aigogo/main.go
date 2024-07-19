@@ -101,7 +101,7 @@ func init() {
 		return
 	}
 	cl = client.New()
-	temp := float32(0.3)
+	temp := float32(0.0)
 	cl.Model.SafetySettings = []*genai.SafetySetting{
 		// {Category: genai.HarmCategoryDangerousContent, Threshold: genai.HarmBlockOnlyHigh},
 		// {Category: genai.HarmCategoryMedical,Threshold: genai.HarmBlockMediumAndAbove},
