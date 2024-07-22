@@ -1,8 +1,12 @@
 package auth
 
 import (
+	"encoding/gob"
+	"fmt"
 	"html/template"
+	"log"
 	"net/http"
+	"os"
 	"sync"
 	"time"
 
@@ -21,6 +25,51 @@ var (
 	Users      = make(map[string]User)
 	UsersMutex sync.RWMutex
 )
+
+const UsersFile = "../../data/users.gob"
+
+func init() {
+	err := loadUsers()
+	if err != nil {
+		log.Printf("Failed to load users: %v", err)
+	}
+}
+
+func loadUsers() error {
+	file, err := os.Open(UsersFile)
+	if err != nil {
+		if os.IsNotExist(err) {
+			log.Println("Users file does not exist. Starting with an empty user list.")
+			return nil // Not an error, just a new application
+		}
+		return fmt.Errorf("error opening users file: %w", err)
+	}
+	defer file.Close()
+
+	decoder := gob.NewDecoder(file)
+	if err := decoder.Decode(&Users); err != nil {
+		return fmt.Errorf("error decoding users: %w", err)
+	}
+
+	log.Printf("Loaded %d users from file", len(Users))
+	return nil
+}
+
+func saveUsers() error {
+	file, err := os.Create(UsersFile)
+	if err != nil {
+		return fmt.Errorf("error creating users file: %w", err)
+	}
+	defer file.Close()
+
+	encoder := gob.NewEncoder(file)
+	if err := encoder.Encode(Users); err != nil {
+		return fmt.Errorf("error encoding users: %w", err)
+	}
+
+	log.Printf("Saved %d users to file", len(Users))
+	return nil
+}
 
 func SigninHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodPost {
@@ -55,7 +104,7 @@ func SigninHandler(w http.ResponseWriter, r *http.Request) {
 			Value:    sessionToken,
 			Expires:  time.Now().Add(24 * time.Hour),
 			HttpOnly: true,
-			Secure:   true, // Requires HTTPS
+			Secure:   true,
 			SameSite: http.SameSiteStrictMode,
 		})
 
@@ -83,6 +132,7 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 
 		hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 		if err != nil {
+			log.Printf("Error hashing password: %v", err)
 			http.Error(w, "Internal server error", http.StatusInternalServerError)
 			return
 		}
@@ -97,6 +147,13 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 		Users[username] = user
 		UsersMutex.Unlock()
 
+		if err := saveUsers(); err != nil {
+			log.Printf("Failed to save users: %v", err)
+			http.Error(w, "Failed to save user data", http.StatusInternalServerError)
+			return
+		}
+
+		log.Printf("New user registered: %s", username)
 		http.Redirect(w, r, "/signin", http.StatusSeeOther)
 		return
 	}
