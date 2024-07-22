@@ -73,7 +73,7 @@ func batchEmbed(dat [][]string) *genai.BatchEmbedContentsResponse {
 }
 
 func outputEmbeddingsGOB(dat [][]string, res []*genai.BatchEmbedContentsResponse) {
-	o, err := os.Create("../aigogo/internal/vecdb/embeddings.gob")
+	o, err := os.Create("../../data/embeddings.gob")
 	if err != nil {
 		log.Fatal(err)
 	}

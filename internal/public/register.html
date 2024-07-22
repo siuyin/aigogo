@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register</title>
+    <style>
+        :root {
+            --sans-font: -apple-system, BlinkMacSystemFont, "Avenir Next", Avenir, "Nimbus Sans L", Roboto, "Noto Sans", "Segoe UI", Arial, Helvetica, "Helvetica Neue", sans-serif;
+            --mono-font: Consolas, Menlo, Monaco, "Andale Mono", "Ubuntu Mono", monospace;
+            --standard-border-radius: 5px;
+            --bg: #fff;
+            --accent-bg: #f5f7ff;
+            --text: #212121;
+            --text-light: #585858;
+            --border: #898EA4;
+            --accent: #0d47a1;
+            --accent-hover: #1266e2;
+            --accent-text: var(--bg);
+            --code: #d81b60;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg: #212121;
+                --accent-bg: #2b2b2b;
+                --text: #dcdcdc;
+                --text-light: #ababab;
+                --accent: #ffb300;
+                --accent-hover: #ffe099;
+                --code: #f06292;
+            }
+        }
+
+        body {
+            font-family: var(--sans-font);
+            color: var(--text);
+            background-color: var(--bg);
+            line-height: 1.5;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            justify-content: center;
+            padding: 0 1rem;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 400px;
+            margin: 0 auto;
+            padding: 1rem;
+            border: 1px solid var(--border);
+            border-radius: var(--standard-border-radius);
+            background-color: var(--accent-bg);
+        }
+
+        h1 {
+            margin-top: 0;
+            text-align: center;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+        }
+
+        label {
+            margin-top: 1rem;
+        }
+
+        input[type="text"],
+        input[type="password"] {
+            padding: 0.5rem;
+            border: 1px solid var(--border);
+            border-radius: var(--standard-border-radius);
+            font-size: 1rem;
+        }
+
+        input[type="submit"] {
+            margin-top: 1rem;
+            padding: 0.5rem;
+            background-color: var(--accent);
+            color: var(--accent-text);
+            border: none;
+            border-radius: var(--standard-border-radius);
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        input[type="submit"]:hover {
+            background-color: var(--accent-hover);
+        }
+
+        .error {
+            color: #d32f2f;
+            background-color: #ffcdd2;
+            padding: 0.5rem;
+            border-radius: var(--standard-border-radius);
+            margin-bottom: 1rem;
+        }
+
+        p {
+            text-align: center;
+            margin-top: 1rem;
+        }
+
+        a {
+            color: var(--accent);
+            text-decoration: none;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Register</h1>
+        <form action="/register" method="post">
+            <label for="username">Username:</label>
+            <input type="text" id="username" name="username" required>
+            
+            <label for="email">Email:</label>
+            <input type="email" id="email" name="email" required>
+            
+            <label for="password">Password:</label>
+            <input type="password" id="password" name="password" required>
+            
+            <input type="submit" value="Register">
+        </form>
+        <p>Already have an account? <a href="/signin">Sign in here</a></p>
+    </div>
+</body>
+</html>
