@@ -14,11 +14,14 @@ import (
 	"strings"
 	"time"
 
+	"aigogo-final/internal/public"
+	"aigogo-final/internal/vecdb"
+
+	"aigogo-final/internal/auth"
+	"aigogo-final/internal/rag"
+
 	"github.com/google/generative-ai-go/genai"
 	"github.com/philippgille/chromem-go"
-	"github.com/siuyin/aigogo/cmd/aigogo/internal/public"
-	"github.com/siuyin/aigogo/cmd/aigogo/internal/vecdb"
-	"github.com/siuyin/aigogo/rag"
 	"github.com/siuyin/aigotut/client"
 	"github.com/siuyin/dflt"
 	"google.golang.org/api/iterator"
@@ -44,11 +47,18 @@ type mapResponse struct {
 
 func main() {
 	depl := dflt.EnvString("DEPLOY", "DEV")
+
 	if depl == "DEV" {
-		http.Handle("/", http.FileServer(http.Dir("./internal/public"))) // DEV
+		fileServer := http.FileServer(http.Dir("../../internal/public"))
+		http.Handle("/", auth.AuthMiddleware(fileServer.ServeHTTP))
 	} else {
-		http.Handle("/", http.FileServer(http.FS(public.Content))) // PROD
+		fileServer := http.FileServer(http.FS(public.Content)) // PROD
+		http.Handle("/", auth.AuthMiddleware(fileServer.ServeHTTP))
 	}
+
+	http.HandleFunc("/signin", auth.SigninHandler)
+	http.HandleFunc("/register", auth.RegisterHandler)
+	http.HandleFunc("/logout", auth.LogoutHandler)
 
 	retrievalFunc := func(w http.ResponseWriter, r *http.Request) {
 		qry := r.FormValue("userPrompt")
@@ -261,7 +271,7 @@ func loadDocuments() []chromem.Document {
 	)
 	depl = dflt.EnvString("DEPLOY", "DEV")
 	if depl == "DEV" {
-		f, err = os.Open("./internal/vecdb/embeddings.gob") // DEV
+		f, err = os.Open("../../internal/vecdb/embeddings.gob") // DEV
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -352,7 +362,7 @@ func retrieveDocsForAugmentation(r *http.Request, qry string) []string {
 	doc := []string{}
 	for i := 0; i < len(qres); i++ {
 		if os.Getenv("DEBUG") != "" {
-			fmt.Println("vector DB:",qres[i].ID, qres[i].Content)
+			fmt.Println("vector DB:", qres[i].ID, qres[i].Content)
 		}
 		doc = append(doc, qres[i].Content)
 	}
