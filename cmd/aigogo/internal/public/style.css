@@ -37,8 +37,13 @@ button.red:hover {
     display: flex;
     flex: auto;
     justify-content: space-between;
+    align-items: flex-start;
 }
 
 select {
+    margin-right: 0.5em;
+}
+
+textarea {
     margin-right: 0.5em;
 }
