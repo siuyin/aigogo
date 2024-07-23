@@ -45,22 +45,36 @@ type mapResponse struct {
 	} `json:"results"`
 }
 
+type tmplDat struct {
+	Body string
+	JS   string
+}
+
 func main() {
+
 	depl := dflt.EnvString("DEPLOY", "DEV")
 	if depl == "DEV" {
 		tmpl = template.Must(template.ParseGlob("./internal/public/*.html"))
 		http.Handle("/", http.FileServer(http.Dir("./internal/public"))) // DEV
 	} else {
-		tmpl = template.Must(template.ParseFS(public.Content,"*.html"))
+		tmpl = template.Must(template.ParseFS(public.Content, "*.html"))
 		http.Handle("/", http.FileServer(http.FS(public.Content))) // PROD
 	}
 
 	indexFunc := func(w http.ResponseWriter, r *http.Request) {
-		if err := tmpl.ExecuteTemplate(w, "main.html", nil); err != nil {
+		if err := tmpl.ExecuteTemplate(w, "main.html", tmplDat{Body: "main", JS: "/main.js"}); err != nil {
 			io.WriteString(w, err.Error())
 		}
 	}
 	http.HandleFunc("/{$}", indexFunc)
+
+	personalLogFunc := func(w http.ResponseWriter, r *http.Request) {
+		if err := tmpl.ExecuteTemplate(w, "main.html", tmplDat{Body: "personallog", JS: "/personallog.js"}); err != nil {
+			io.WriteString(w, err.Error())
+		}
+
+	}
+	http.HandleFunc("/personallog", personalLogFunc)
 
 	retrievalFunc := func(w http.ResponseWriter, r *http.Request) {
 		qry := r.FormValue("userPrompt")

@@ -6,7 +6,9 @@
 </head>
 
 <body>
-    {{template "mainbody.html"}}
+    {{if eq .Body "main"}} {{template "mainbody.html" .JS}}
+    {{else if eq .Body "personallog"}} {{template "personallogbody.html" .JS}}
+    {{end}}
     {{template "footer.html"}}
 </body>
 

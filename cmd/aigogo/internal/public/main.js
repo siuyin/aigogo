@@ -135,7 +135,13 @@ function recordSelectedContext(ctx) {
 recordSelectedContext("General");
 
 const selectedSuggestion = document.getElementById("selected-suggestion");
-selectedSuggestion.addEventListener("change", (ev) => { copySelectedSuggestionToUserPrompt(ev.target.value) });
+selectedSuggestion.addEventListener("change", (ev) => {
+    if (ev.target.value == "personal-log") {
+        window.location.replace("/personallog");
+        return;
+    }
+    copySelectedSuggestionToUserPrompt(ev.target.value)
+});
 function copySelectedSuggestionToUserPrompt(prompt) {
     userPrompt.value = prompt;
     console.log(prompt);

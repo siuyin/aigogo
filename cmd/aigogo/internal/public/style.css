@@ -25,3 +25,20 @@ pre {
     margin-top: 1rem;
     font-size: x-small;
 }
+
+button.red {
+    background-color: darkred;
+}
+button.red:hover {
+    background-color: red;
+}
+
+.horizontal {
+    display: flex;
+    flex: auto;
+    justify-content: space-between;
+}
+
+select {
+    margin-right: 0.5em;
+}

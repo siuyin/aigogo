@@ -1,0 +1,47 @@
+<h1>Personal Log</h1>
+<div class="horizontal">
+    <span>
+        <button id="recordLog">Record Log</button>
+        <button class="red" id="recordStop">Stop</button>
+    </span>
+    <a id="reviewLatestLog" href="#">Review latest log</a>
+</div>
+
+<div class="horizontal">
+    <textarea id="logText"></textarea>
+    <button id="saveEditedText">Save</button>
+</div>
+
+<div class="horizontal">
+    <p>Primary highlight:
+        <select id="primaryHighlight">
+            <option>One</option>
+            <option>Two</option>
+        </select>
+    </p>
+    <p>Secondary highlight:
+        <select id="secondaryHighlight">
+            <option>One</option>
+            <option>Two</option>
+        </select>
+    </p>
+    <p>Who I was with:
+        <select id="whoIWasWith" multiple>
+            <option>Ah Kow</option>
+            <option>Ahmad</option>
+            <option>Muthu</option>
+        </select>
+    </p>
+</div>
+
+<div id="summary">
+    Log summarized by LLM here...
+</div>
+
+<div>
+    Query functions for personal logs here.
+</div>
+
+<a href="/">Back to AiGoGo main page</a>
+
+<script type="module" src="{{.}}"></script>
