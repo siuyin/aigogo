@@ -5,6 +5,7 @@ import (
 	"encoding/gob"
 	"encoding/json"
 	"fmt"
+	"html/template"
 	"io"
 	"log"
 	"net/http"
@@ -34,6 +35,8 @@ var (
 	db         *chromem.DB
 
 	mapsClient *maps.Client
+
+	tmpl *template.Template
 )
 
 type mapResponse struct {
@@ -45,10 +48,19 @@ type mapResponse struct {
 func main() {
 	depl := dflt.EnvString("DEPLOY", "DEV")
 	if depl == "DEV" {
+		tmpl = template.Must(template.ParseGlob("./internal/public/*.html"))
 		http.Handle("/", http.FileServer(http.Dir("./internal/public"))) // DEV
 	} else {
+		tmpl = template.Must(template.ParseFS(public.Content,"*.html"))
 		http.Handle("/", http.FileServer(http.FS(public.Content))) // PROD
 	}
+
+	indexFunc := func(w http.ResponseWriter, r *http.Request) {
+		if err := tmpl.ExecuteTemplate(w, "main.html", nil); err != nil {
+			io.WriteString(w, err.Error())
+		}
+	}
+	http.HandleFunc("/{$}", indexFunc)
 
 	retrievalFunc := func(w http.ResponseWriter, r *http.Request) {
 		qry := r.FormValue("userPrompt")
@@ -352,7 +364,7 @@ func retrieveDocsForAugmentation(r *http.Request, qry string) []string {
 	doc := []string{}
 	for i := 0; i < len(qres); i++ {
 		if os.Getenv("DEBUG") != "" {
-			fmt.Println("vector DB:",qres[i].ID, qres[i].Content)
+			fmt.Println("vector DB:", qres[i].ID, qres[i].Content)
 		}
 		doc = append(doc, qres[i].Content)
 	}
