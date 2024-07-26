@@ -29,6 +29,7 @@ pre {
 button.red {
     background-color: darkred;
 }
+
 button.red:hover {
     background-color: red;
 }
@@ -45,5 +46,6 @@ select {
 }
 
 textarea {
+    margin-top: 0.5em;
     margin-right: 0.5em;
 }

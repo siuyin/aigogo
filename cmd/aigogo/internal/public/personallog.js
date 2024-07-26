@@ -1,8 +1,19 @@
 const recLogBtn = document.getElementById("recordLog");
-recLogBtn.addEventListener("click", () => { console.log("record start"); });
+recLogBtn.addEventListener("click", () => { captureAudio(); });
 
 const recStopBtn = document.getElementById("recordStop");
-recStopBtn.addEventListener("click", () => { console.log("record stop"); });
+recStopBtn.addEventListener("click", () => { processAudio(); });
+allowRecording(true);
+
+function allowRecording(s) {
+    if (s == true) {
+        recLogBtn.disabled = false;
+        recStopBtn.disabled = true;
+        return
+    }
+    recLogBtn.disabled = true;
+    recStopBtn.disabled = false;
+}
 
 const reviewLatestLogLink = document.getElementById("reviewLatestLog");
 reviewLatestLogLink.addEventListener("click", () => {
@@ -28,4 +39,46 @@ function selectedPeople(peoplelist) {
         ret.push(p.innerText);
     }
     return ret.join("|");
+}
+
+let mediaRecorder;
+let audioStream;
+let audioChunks = [];
+async function captureAudio() {
+    try {
+        audioChunks = [];
+        allowRecording(false);
+        audioStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        mediaRecorder = new MediaRecorder(audioStream, { mimeType: "audio/webm;codecs=opus", audioBitsPerSecond: 16000 });
+        mediaRecorder.ondataavailable = (event) => {
+            audioChunks.push(event.data);
+            console.log(".");
+        }
+        mediaRecorder.start();
+        console.log("capturing audio");
+    } catch (err) {
+        allowRecording(true);
+        console.error("problem capturing audio:", err);
+        summary.innerHTML = `problem accessing microphone: ${err}`;
+    }
+}
+
+async function processAudio() {
+    console.log(`len: ${audioChunks.length}`)
+    console.log(audioChunks);
+    mediaRecorder.stop();
+    mediaRecorder.onstop = () => {
+        allowRecording(true);
+        const tracks = audioStream.getAudioTracks();
+        tracks[0].stop();
+        playAudio();
+    }
+}
+
+const aud = document.getElementById("audio");
+function playAudio() {
+    const blob = new Blob(audioChunks, { type: 'audio/webm;codecs=opus' });
+    const audioURL = URL.createObjectURL(blob);
+    aud.src = audioURL;
+    aud.play();
 }
