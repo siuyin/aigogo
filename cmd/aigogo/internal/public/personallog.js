@@ -33,6 +33,9 @@ const primaryHighlight = document.getElementById("primaryHighlight");
 const secondaryHighlight = document.getElementById("secondaryHighlight");
 const whoIWasWith = document.getElementById("whoIWasWith");
 
+const queryFunctions = document.getElementById("queryFunctions");
+
+
 function selectedPeople(peoplelist) {
     let ret = [];
     for (const p of peoplelist) {
@@ -52,10 +55,8 @@ async function captureAudio() {
         mediaRecorder = new MediaRecorder(audioStream, { mimeType: "audio/webm;codecs=opus", audioBitsPerSecond: 16000 });
         mediaRecorder.ondataavailable = (event) => {
             audioChunks.push(event.data);
-            console.log(".");
         }
         mediaRecorder.start();
-        console.log("capturing audio");
     } catch (err) {
         allowRecording(true);
         console.error("problem capturing audio:", err);
@@ -64,8 +65,6 @@ async function captureAudio() {
 }
 
 async function processAudio() {
-    console.log(`len: ${audioChunks.length}`)
-    console.log(audioChunks);
     mediaRecorder.stop();
     mediaRecorder.onstop = () => {
         allowRecording(true);
@@ -76,9 +75,38 @@ async function processAudio() {
 }
 
 const aud = document.getElementById("audio");
-function playAudio() {
+const logEntries = [];
+async function playAudio() {
     const blob = new Blob(audioChunks, { type: 'audio/webm;codecs=opus' });
     const audioURL = URL.createObjectURL(blob);
     aud.src = audioURL;
+    const ds = new Date().toISOString();
+    aud.title = `log-${ds}.webm`
     aud.play();
+    console.log(await blobToDataURL(blob));
+    logEntries.push({ title: `log-${ds}`, audio: `${await blobToDataURL(blob)}` });
+    updateQueryFunctions();
+}
+
+localStorage.setItem("lastAccessTime", `${new Date().toISOString()}`);
+
+function updateQueryFunctions() {
+    queryFunctions.innerHTML = "";
+    for (const e of logEntries) {
+        queryFunctions.innerHTML += `<p>${e.title} <audio src="${e.audio}" controls></audio></p>`;
+    }
+}
+
+async function blobToDataURL(b) {
+    try {
+        const b64 = await new Promise(r => {
+            const rd = new FileReader();
+            rd.onloadend = () => r(rd.result);
+            rd.readAsDataURL(b);
+        });
+        // return b64.slice(b64.indexOf(",") + 1);
+        return b64;
+    } catch (err) {
+        console.error(err);
+    }
 }
