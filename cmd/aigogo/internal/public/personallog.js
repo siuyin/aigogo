@@ -75,7 +75,7 @@ async function processAudio() {
 }
 
 const aud = document.getElementById("audio");
-const logEntries = [];
+const logEntries = JSON.parse(localStorage.getItem("logEntries")) ?? [];
 async function playAudio() {
     const blob = new Blob(audioChunks, { type: 'audio/webm;codecs=opus' });
     const audioURL = URL.createObjectURL(blob);
@@ -94,6 +94,7 @@ function updateQueryFunctions() {
     for (const e of logEntries) {
         queryFunctions.innerHTML += `<p>${e.title} <audio src="${e.audio}" controls></audio></p>`;
     }
+    localStorage.setItem("logEntries",JSON.stringify(logEntries));
 }
 
 async function blobToDataURL(b) {
