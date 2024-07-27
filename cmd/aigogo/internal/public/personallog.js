@@ -83,7 +83,6 @@ async function playAudio() {
     const ds = new Date().toISOString();
     aud.title = `log-${ds}.webm`
     aud.play();
-    console.log(await blobToDataURL(blob));
     logEntries.push({ title: `log-${ds}`, audio: `${await blobToDataURL(blob)}` });
     updateQueryFunctions();
 }
