@@ -66,6 +66,7 @@ async function processAudio() {
         tracks[0].stop();
         playAudio();
     }
+    addFakeLogEntry();
 }
 
 const aud = document.getElementById("audio");
@@ -103,4 +104,11 @@ async function blobToDataURL(b) {
     } catch (err) {
         console.error(err);
     }
+}
+
+function addFakeLogEntry() {
+    logText.innerHTML = "Date: " + new Date().toISOString() +
+        " Coordinates: " + sessionStorage.getItem("latlng") +
+        " Neighborhood: " + sessionStorage.getItem("neighborhood") +
+        "\nThe quick brown fox jumps over the lazy dog";
 }
