@@ -15,12 +15,6 @@ function allowRecording(s) {
     recStopBtn.disabled = false;
 }
 
-const reviewLatestLogLink = document.getElementById("reviewLatestLog");
-reviewLatestLogLink.addEventListener("click", () => {
-    console.log("reviewing log");
-    logText.innerText = "The quick brown fox jumps over the lazy dog.";
-})
-
 const logText = document.getElementById("logText");
 
 const saveEditedText = document.getElementById("saveEditedText");
@@ -94,7 +88,7 @@ function updateQueryFunctions() {
     for (const e of logEntries) {
         queryFunctions.innerHTML += `<p>${e.title} <audio src="${e.audio}" controls></audio></p>`;
     }
-    localStorage.setItem("logEntries",JSON.stringify(logEntries));
+    localStorage.setItem("logEntries", JSON.stringify(logEntries));
 }
 
 async function blobToDataURL(b) {
