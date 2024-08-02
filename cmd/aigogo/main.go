@@ -39,6 +39,8 @@ var (
 	tmpl *template.Template
 )
 
+const dataPath = "/data/aigogo"
+
 type mapResponse struct {
 	Results []struct {
 		FormattedAddress string `json:"formatted_address"`
@@ -97,46 +99,8 @@ func main() {
 	}
 	http.HandleFunc("/loc", locationFunc)
 
-	type sampleData struct {
-		ID      string
-		User    string
-		TimeStr string
-		Time    time.Time
-	}
 	dataWrite := func(w http.ResponseWriter, r *http.Request) {
-		dat, err := io.ReadAll(r.Body)
-		if err != nil {
-			fmt.Fprintf(w, "could not read request body: %v", err)
-			return
-		}
-		var sd sampleData
-		if err := json.Unmarshal(dat, &sd); err != nil {
-			log.Printf("ERROR: could not unmarshal data: %v", err)
-			return
-		}
-
-		t, err := time.Parse(time.RFC3339, sd.TimeStr)
-		if err != nil {
-			log.Printf("ERROR: could not parse time string: %s: %v", sd.TimeStr, err)
-			return
-		}
-		sd.Time = t
-
-		if err := os.MkdirAll("/data/aigogo/"+sd.ID, 0750); err != nil {
-			log.Fatalf("ERROR: could not create user folder: %v", err)
-			return
-		}
-
-		f,err:=os.Create("/data/aigogo/"+sd.ID+"/test.json")
-		if err!=nil {
-			log.Fatalf("ERROR: could not create test.json: %v", err)
-			return
-		}
-		defer f.Close()
-
-		f.Write(dat)
-
-		fmt.Fprintf(w, "data write request received: %#v", sd)
+		processTestRequest(w, r)
 	}
 	http.HandleFunc("/data", dataWrite)
 
@@ -179,12 +143,9 @@ func init() {
 	em = initEmbeddingClient()
 	collection = initDB()
 	mapsClient = initMapsClient()
-	log.Println("application initialised")
+	initAigogoDataPath()
 
-	if err := os.MkdirAll("/data/aigogo", 0750); err != nil {
-		log.Fatal("ERROR: could not make aigogo data folder:", err)
-		return
-	}
+	log.Println("application initialised")
 }
 
 func initEmbeddingClient() *genai.EmbeddingModel {
@@ -214,6 +175,13 @@ func initMapsClient() *maps.Client {
 		log.Fatal(err)
 	}
 	return cl
+}
+
+func initAigogoDataPath() {
+	if err := os.MkdirAll(dataPath, 0750); err != nil {
+		log.Fatal("ERROR: could not make aigogo data folder:", err)
+		return
+	}
 }
 
 // func writeRetrievedDocs(w http.ResponseWriter, doc []string) {
@@ -464,4 +432,47 @@ func tzLoc(latlng string) *time.Location {
 		log.Fatal(err)
 	}
 	return loc
+}
+
+type sampleData struct {
+	ID      string
+	User    string
+	TimeStr string
+	Time    time.Time
+}
+
+func processTestRequest(w http.ResponseWriter, r *http.Request) {
+	dat, err := io.ReadAll(r.Body)
+	if err != nil {
+		fmt.Fprintf(w, "could not read request body: %v", err)
+		return
+	}
+	var sd sampleData
+	if err := json.Unmarshal(dat, &sd); err != nil {
+		log.Printf("ERROR: could not unmarshal data: %v", err)
+		return
+	}
+
+	t, err := time.Parse(time.RFC3339, sd.TimeStr)
+	if err != nil {
+		log.Printf("ERROR: could not parse time string: %s: %v", sd.TimeStr, err)
+		return
+	}
+	sd.Time = t
+
+	if err := os.MkdirAll(dataPath+"/"+sd.ID, 0750); err != nil {
+		log.Fatalf("ERROR: could not create user folder: %v", err)
+		return
+	}
+
+	f, err := os.Create(dataPath + "/" + sd.ID + "/test.json")
+	if err != nil {
+		log.Fatalf("ERROR: could not create test.json: %v", err)
+		return
+	}
+	defer f.Close()
+
+	f.Write(dat)
+
+	fmt.Fprintf(w, "data write request received: %#v", sd)
 }
