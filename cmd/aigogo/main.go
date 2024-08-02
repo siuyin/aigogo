@@ -442,6 +442,8 @@ type sampleData struct {
 }
 
 func processTestRequest(w http.ResponseWriter, r *http.Request) {
+	ter := r.FormValue("ter")
+	log.Printf("rececived: ter=%s", ter)
 	dat, err := io.ReadAll(r.Body)
 	if err != nil {
 		fmt.Fprintf(w, "could not read request body: %v", err)

@@ -1,48 +1,57 @@
 <h1>Personal Log</h1>
-<button id="writeData">Write data test</button>
-<div class="horizontal">
-    <span>
-        <button id="recordLog">Record Log</button>
-        <button class="red" id="recordStop">Stop</button>
-    </span>
-    <audio id="audio" controls title="personalLog.webm"></audio>
+
+<div id="userSignIn">
+    User ID: <input type="text" id="userID" required>
+    <button id="userIDSubmit">Sign in</button>
 </div>
 
-<div class="horizontal">
-    <textarea id="logText"></textarea>
-    <button id="saveEditedText">Save</button>
+<div id="mainScreen" class="hide">
+    <button id="writeData">Write data test</button>
+    <span id="userNameSpan"></span>
+    <div class="horizontal">
+        <span>
+            <button id="recordLog">Record Log</button>
+            <button class="red" id="recordStop">Stop</button>
+        </span>
+        <audio id="audio" controls title="personalLog.webm"></audio>
+    </div>
+
+    <div class="horizontal">
+        <textarea id="logText"></textarea>
+        <button id="saveEditedText">Save</button>
+    </div>
+
+    <div class="horizontal">
+        Primary highlight:
+        <select id="primaryHighlight">
+            <option>One</option>
+            <option>Two</option>
+        </select>
+
+        Secondary highlight:
+        <select id="secondaryHighlight">
+            <option>One</option>
+            <option>Two</option>
+        </select>
+
+        Who I was with:
+        <select id="whoIWasWith" multiple>
+            <option>Ah Kow</option>
+            <option>Ahmad</option>
+            <option>Muthu</option>
+        </select>
+
+    </div>
+
+    <div id="summary">
+        Log summarized by LLM here...
+    </div>
+
+    <div id="queryFunctions">
+        Query functions for personal logs here.
+    </div>
+
 </div>
-
-<div class="horizontal">
-    Primary highlight:
-    <select id="primaryHighlight">
-        <option>One</option>
-        <option>Two</option>
-    </select>
-
-    Secondary highlight:
-    <select id="secondaryHighlight">
-        <option>One</option>
-        <option>Two</option>
-    </select>
-
-    Who I was with:
-    <select id="whoIWasWith" multiple>
-        <option>Ah Kow</option>
-        <option>Ahmad</option>
-        <option>Muthu</option>
-    </select>
-
-</div>
-
-<div id="summary">
-    Log summarized by LLM here...
-</div>
-
-<div id="queryFunctions">
-    Query functions for personal logs here.
-</div>
-
 <a href="/">Back to AiGoGo main page</a>
 
 <script type="module" src="{{.}}"></script>

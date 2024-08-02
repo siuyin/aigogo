@@ -115,8 +115,8 @@ function addFakeLogEntry() {
 
 const writeDataBtn = document.getElementById("writeData");
 writeDataBtn.addEventListener("click", writeData);
-async function writeData(dat) {
-    const url = "/data";
+async function writeData() {
+    const url = `/data?ter=pau`;
     const res = await fetch(url,
         {
             method: "POST",
@@ -129,4 +129,40 @@ async function writeData(dat) {
         rep += dec.decode(chunk);
     }
     console.log(rep);
+}
+const userSignInDiv = document.getElementById("userSignIn");
+const mainScreenDiv = document.getElementById("mainScreen");
+const userNameSpan = document.getElementById("userNameSpan");
+
+let userName = "";
+let sessionUserID = sessionStorage.getItem("userID") ?? "";
+function checkSignIn() {
+    if (sessionUserID == "") {
+        showSignOnScreen()
+        return
+    }
+    showMainScreen();
+}
+checkSignIn();
+
+function showSignOnScreen() {
+    userSignInDiv.classList.remove("hide");
+    mainScreenDiv.classList.add("hide");
+}
+
+function showMainScreen() {
+    userSignInDiv.classList.add("hide");
+    mainScreenDiv.classList.remove("hide");
+    userNameSpan.innerText = userName;
+}
+
+const userID = document.getElementById("userID");
+const userSignInBtn = document.getElementById("userIDSubmit");
+userSignInBtn.addEventListener("click", getUser)
+function getUser() {
+    console.log("return fake user id: 123456");
+    sessionStorage.setItem("userID", "123456");
+    sessionUserID = "123456";
+    userName = "Kit Siew";
+    showMainScreen();
 }
