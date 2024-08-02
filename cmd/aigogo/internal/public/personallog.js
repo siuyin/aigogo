@@ -46,7 +46,7 @@ async function captureAudio() {
         audioChunks = [];
         allowRecording(false);
         audioStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        mediaRecorder = new MediaRecorder(audioStream, { mimeType: "audio/webm;codecs=opus", audioBitsPerSecond: 16000 });
+        mediaRecorder = new MediaRecorder(audioStream, { mimeType: "audio/webm;codec=ogg", audioBitsPerSecond: 16000 });
         mediaRecorder.ondataavailable = (event) => {
             audioChunks.push(event.data);
         }
@@ -66,13 +66,13 @@ async function processAudio() {
         tracks[0].stop();
         playAudio();
     }
-    addFakeLogEntry();
+    logText.innerHTML = "transcribing...";
 }
 
 const aud = document.getElementById("audio");
 const logEntries = JSON.parse(localStorage.getItem("logEntries")) ?? [];
 async function playAudio() {
-    const blob = new Blob(audioChunks, { type: 'audio/webm;codecs=opus' });
+    const blob = new Blob(audioChunks, { type: 'audio/webm;codec=ogg' });
     const audioURL = URL.createObjectURL(blob);
     aud.src = audioURL;
     const ds = new Date().toISOString();
@@ -89,15 +89,15 @@ async function recordLogEntry(ds,blob){
     const res = await fetch(url,
         {
             method: "POST",
-            headers: { "Content-Type": "audio/webm;codecs=opus" },
+            headers: { "Content-Type": "audio/webm;codec=ogg" },
             body: blob,
         });
-    let rep = "";
+    let resp = "";
     const dec = new TextDecoder("utf-8");
     for await (const chunk of res.body) {
-        rep += dec.decode(chunk);
+        resp += dec.decode(chunk);
     }
-    console.log(rep);
+    logText.innerText=resp;
 }
 
 localStorage.setItem("lastAccessTime", `${new Date().toISOString()}`);
@@ -124,11 +124,12 @@ async function blobToDataURL(b) {
     }
 }
 
-function addFakeLogEntry() {
-    logText.innerHTML = "Date: " + new Date().toISOString() +
-        " Coordinates: " + sessionStorage.getItem("latlng") +
-        " Neighborhood: " + sessionStorage.getItem("neighborhood") +
-        "\nThe quick brown fox jumps over the lazy dog";
+// FIXME: remove
+function addWaitForTranscriptionMessage() {
+    // logText.innerHTML = "Date: " + new Date().toISOString() +
+    //     " Coordinates: " + sessionStorage.getItem("latlng") +
+    //     " Neighborhood: " + sessionStorage.getItem("neighborhood") +
+    //     "\nThe quick brown fox jumps over the lazy dog";
 }
 
 const writeDataBtn = document.getElementById("writeData");

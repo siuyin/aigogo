@@ -21,6 +21,7 @@ import (
 	"github.com/siuyin/aigogo/cmd/aigogo/internal/vecdb"
 	"github.com/siuyin/aigogo/rag"
 	"github.com/siuyin/aigotut/client"
+	"github.com/siuyin/aigotut/gfmt"
 	"github.com/siuyin/dflt"
 	"google.golang.org/api/iterator"
 	"googlemaps.github.io/maps"
@@ -457,15 +458,22 @@ func saveAudioLog(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	f,err:=os.Create(dataPath+"/"+userID+"/"+fn+".webm")
+	f, err := os.Create(dataPath + "/" + userID + "/" + fn + ".ogg")
 	if err != nil {
-		log.Fatalf("ERROR: could not create %s.webm : %v", fn, err)
+		log.Fatalf("ERROR: could not create %s.ogg: %v", fn, err)
 		return
 	}
 	defer f.Close()
 
 	f.Write(dat)
-	fmt.Fprintf(w, "saved audio log entry: %s.webm",fn)
+
+	prompt := "Please transcribe the following audio."
+	resp, err := cl.Model.GenerateContent(context.Background(), genai.Blob{MIMEType: "audio/ogg", Data: dat}, genai.Text(prompt))
+	if err != nil {
+		log.Printf("WARNING: transcription failure: %v", err)
+		return
+	}
+	gfmt.FprintResponse(w, resp)
 }
 func processTestRequest(w http.ResponseWriter, r *http.Request) {
 	ter := r.FormValue("ter")
