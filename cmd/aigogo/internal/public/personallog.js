@@ -18,9 +18,25 @@ function allowRecording(s) {
 const logText = document.getElementById("logText");
 
 const saveEditedText = document.getElementById("saveEditedText");
-saveEditedText.addEventListener("click", () => {
-    summary.innerHTML = `summary: ${logText.value} <p>tags: Primary=${primaryHighlight.value}, Secondary=${secondaryHighlight.value}, People=${selectedPeople(whoIWasWith.selectedOptions)}`;
-});
+saveEditedText.addEventListener("click", saveEditedLogText);
+
+// summary.innerHTML = `summary: ${logText.value} <p>tags: Primary=${primaryHighlight.value}, Secondary=${secondaryHighlight.value}, People=${selectedPeople(whoIWasWith.selectedOptions)}`;
+async function saveEditedLogText() {
+    const ds = sessionStorage.getItem("logDate");
+    const url = `/data?editedlog=log-${encodeURIComponent(ds)}&userID=${sessionUserID}`;
+    const res = await fetch(url,
+        {
+            method: "POST",
+            headers: { "Content-Type": "test/plain" },
+            body: logText.value,
+        });
+    let resp = "";
+    const dec = new TextDecoder("utf-8");
+    for await (const chunk of res.body) {
+        resp += dec.decode(chunk);
+    }
+    console.log(resp)
+}
 
 const summary = document.getElementById("summary");
 const primaryHighlight = document.getElementById("primaryHighlight");
@@ -70,21 +86,19 @@ async function processAudio() {
 }
 
 const aud = document.getElementById("audio");
-const logEntries = JSON.parse(localStorage.getItem("logEntries")) ?? [];
 async function playAudio() {
     const blob = new Blob(audioChunks, { type: 'audio/webm;codec=ogg' });
     const audioURL = URL.createObjectURL(blob);
     aud.src = audioURL;
     const ds = new Date().toISOString();
-    aud.title = `log-${ds}.webm`
+    aud.title = `log-${ds}.ogg`
     aud.play();
-    const dataURL = await blobToDataURL(blob);
-    logEntries.push({ title: `log-${ds}`, audio: `${dataURL}` });
-    recordLogEntry(ds,blob);
+    sessionStorage.setItem("logDate", ds);
+    recordLogEntry(ds, blob);
     updateQueryFunctions();
 }
 
-async function recordLogEntry(ds,blob){
+async function recordLogEntry(ds, blob) {
     const url = `/data?filename=log-${encodeURIComponent(ds)}&userID=${sessionUserID}`;
     const res = await fetch(url,
         {
@@ -97,17 +111,13 @@ async function recordLogEntry(ds,blob){
     for await (const chunk of res.body) {
         resp += dec.decode(chunk);
     }
-    logText.innerText=resp;
+    logText.innerText = resp;
 }
 
 localStorage.setItem("lastAccessTime", `${new Date().toISOString()}`);
 
 function updateQueryFunctions() {
-    queryFunctions.innerHTML = "";
-    for (const e of logEntries) {
-        queryFunctions.innerHTML += `<p>${e.title} <audio src="${e.audio}" controls></audio></p>`;
-    }
-    localStorage.setItem("logEntries", JSON.stringify(logEntries));
+    queryFunctions.innerHTML = "TODO: query functions";
 }
 
 async function blobToDataURL(b) {
@@ -122,14 +132,6 @@ async function blobToDataURL(b) {
     } catch (err) {
         console.error(err);
     }
-}
-
-// FIXME: remove
-function addWaitForTranscriptionMessage() {
-    // logText.innerHTML = "Date: " + new Date().toISOString() +
-    //     " Coordinates: " + sessionStorage.getItem("latlng") +
-    //     " Neighborhood: " + sessionStorage.getItem("neighborhood") +
-    //     "\nThe quick brown fox jumps over the lazy dog";
 }
 
 const writeDataBtn = document.getElementById("writeData");

@@ -109,6 +109,10 @@ func main() {
 		if filename != "" {
 			saveAudioLog(w, r)
 		}
+		editedlog := r.FormValue("editedlog")
+		if editedlog != "" {
+			saveEditedLog(w, r)
+		}
 	}
 	http.HandleFunc("/data", dataWrite)
 
@@ -475,6 +479,28 @@ func saveAudioLog(w http.ResponseWriter, r *http.Request) {
 	}
 	gfmt.FprintResponse(w, resp)
 }
+
+func saveEditedLog(w http.ResponseWriter, r *http.Request) {
+	editedlog := r.FormValue("editedlog")
+	userID := r.FormValue("userID")
+
+	dat, err := io.ReadAll(r.Body)
+	if err != nil {
+		fmt.Fprintf(w, "could not read request body: %v", err)
+		return
+	}
+
+	f, err := os.Create(dataPath + "/" + userID + "/" + editedlog + ".txt")
+	if err != nil {
+		log.Fatalf("ERROR: could not create %s.txt: %v", editedlog, err)
+		return
+	}
+	defer f.Close()
+
+	f.Write(dat)
+	fmt.Fprintf(w, "edited log text saved.")
+}
+
 func processTestRequest(w http.ResponseWriter, r *http.Request) {
 	ter := r.FormValue("ter")
 	log.Printf("rececived: ter=%s", ter)
