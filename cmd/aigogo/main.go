@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"context"
 	"encoding/gob"
 	"encoding/json"
@@ -484,6 +485,10 @@ func saveEditedLog(w http.ResponseWriter, r *http.Request) {
 	editedlog := r.FormValue("editedlog")
 	userID := r.FormValue("userID")
 
+	metadata := fmt.Sprintf("\n---\nlatlng:%s, neighborhood:%s, primaryHighlight:%s, secondaryHiglight:%s, people:%s",
+		r.FormValue("latlng"), r.FormValue("neighborhood"), r.FormValue("primary"), r.FormValue("secondary"),
+		r.FormValue("people"))
+
 	dat, err := io.ReadAll(r.Body)
 	if err != nil {
 		fmt.Fprintf(w, "could not read request body: %v", err)
@@ -497,8 +502,30 @@ func saveEditedLog(w http.ResponseWriter, r *http.Request) {
 	}
 	defer f.Close()
 
+	dat = []byte(string(dat)+metadata)
 	f.Write(dat)
-	fmt.Fprintf(w, "edited log text saved.")
+
+	prompt := fmt.Sprintf(`Please summarize the following text in the first person.
+	Keep the metadata (lines following the ---) intact:
+	%s`,dat)
+	resp, err := cl.Model.GenerateContent(context.Background(), genai.Text(prompt))
+	if err != nil {
+		log.Printf("WARNING: summarization failure: %v", err)
+		return
+	}
+	gfmt.FprintResponse(w, resp)
+
+	var b bytes.Buffer
+	gfmt.FprintResponse(&b,resp)
+
+	s, err := os.Create(dataPath + "/" + userID + "/" + editedlog + ".summary.txt")
+	if err != nil {
+		log.Fatalf("ERROR: could not create %s.summary.txt: %v", editedlog, err)
+		return
+	}
+	defer s.Close()
+
+	s.Write(b.Bytes())
 }
 
 func processTestRequest(w http.ResponseWriter, r *http.Request) {

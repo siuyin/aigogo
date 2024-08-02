@@ -23,7 +23,9 @@ saveEditedText.addEventListener("click", saveEditedLogText);
 // summary.innerHTML = `summary: ${logText.value} <p>tags: Primary=${primaryHighlight.value}, Secondary=${secondaryHighlight.value}, People=${selectedPeople(whoIWasWith.selectedOptions)}`;
 async function saveEditedLogText() {
     const ds = sessionStorage.getItem("logDate");
-    const url = `/data?editedlog=log-${encodeURIComponent(ds)}&userID=${sessionUserID}`;
+    const latlng = sessionStorage.getItem("latlng");
+    const neighborhood = sessionStorage.getItem("neighborhood");
+    const url = `/data?editedlog=log-${encodeURIComponent(ds)}&userID=${sessionUserID}&latlng=${latlng}&neighborhood=${neighborhood}&primary=${primaryHighlight.value}&secondary=${secondaryHighlight.value}&people=${selectedPeople(whoIWasWith.selectedOptions)}`;
     const res = await fetch(url,
         {
             method: "POST",
@@ -35,7 +37,7 @@ async function saveEditedLogText() {
     for await (const chunk of res.body) {
         resp += dec.decode(chunk);
     }
-    console.log(resp)
+    summary.innerText = resp;
 }
 
 const summary = document.getElementById("summary");
