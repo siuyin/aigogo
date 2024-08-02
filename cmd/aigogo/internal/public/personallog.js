@@ -78,8 +78,26 @@ async function playAudio() {
     const ds = new Date().toISOString();
     aud.title = `log-${ds}.webm`
     aud.play();
-    logEntries.push({ title: `log-${ds}`, audio: `${await blobToDataURL(blob)}` });
+    const dataURL = await blobToDataURL(blob);
+    logEntries.push({ title: `log-${ds}`, audio: `${dataURL}` });
+    recordLogEntry(ds,blob);
     updateQueryFunctions();
+}
+
+async function recordLogEntry(ds,blob){
+    const url = `/data?filename=log-${encodeURIComponent(ds)}&userID=${sessionUserID}`;
+    const res = await fetch(url,
+        {
+            method: "POST",
+            headers: { "Content-Type": "audio/webm;codecs=opus" },
+            body: blob,
+        });
+    let rep = "";
+    const dec = new TextDecoder("utf-8");
+    for await (const chunk of res.body) {
+        rep += dec.decode(chunk);
+    }
+    console.log(rep);
 }
 
 localStorage.setItem("lastAccessTime", `${new Date().toISOString()}`);

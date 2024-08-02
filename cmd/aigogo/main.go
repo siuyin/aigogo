@@ -100,7 +100,14 @@ func main() {
 	http.HandleFunc("/loc", locationFunc)
 
 	dataWrite := func(w http.ResponseWriter, r *http.Request) {
-		processTestRequest(w, r)
+		ter := r.FormValue("ter")
+		if ter != "" {
+			processTestRequest(w, r)
+		}
+		filename := r.FormValue("filename")
+		if filename != "" {
+			saveAudioLog(w, r)
+		}
 	}
 	http.HandleFunc("/data", dataWrite)
 
@@ -441,6 +448,25 @@ type sampleData struct {
 	Time    time.Time
 }
 
+func saveAudioLog(w http.ResponseWriter, r *http.Request) {
+	fn := r.FormValue("filename")
+	userID := r.FormValue("userID")
+	dat, err := io.ReadAll(r.Body)
+	if err != nil {
+		fmt.Fprintf(w, "could not read request body: %v", err)
+		return
+	}
+
+	f,err:=os.Create(dataPath+"/"+userID+"/"+fn+".webm")
+	if err != nil {
+		log.Fatalf("ERROR: could not create %s.webm : %v", fn, err)
+		return
+	}
+	defer f.Close()
+
+	f.Write(dat)
+	fmt.Fprintf(w, "saved audio log entry: %s.webm",fn)
+}
 func processTestRequest(w http.ResponseWriter, r *http.Request) {
 	ter := r.FormValue("ter")
 	log.Printf("rececived: ter=%s", ter)
