@@ -97,6 +97,49 @@ func main() {
 	}
 	http.HandleFunc("/loc", locationFunc)
 
+	type sampleData struct {
+		ID      string
+		User    string
+		TimeStr string
+		Time    time.Time
+	}
+	dataWrite := func(w http.ResponseWriter, r *http.Request) {
+		dat, err := io.ReadAll(r.Body)
+		if err != nil {
+			fmt.Fprintf(w, "could not read request body: %v", err)
+			return
+		}
+		var sd sampleData
+		if err := json.Unmarshal(dat, &sd); err != nil {
+			log.Printf("ERROR: could not unmarshal data: %v", err)
+			return
+		}
+
+		t, err := time.Parse(time.RFC3339, sd.TimeStr)
+		if err != nil {
+			log.Printf("ERROR: could not parse time string: %s: %v", sd.TimeStr, err)
+			return
+		}
+		sd.Time = t
+
+		if err := os.MkdirAll("/data/aigogo/"+sd.ID, 0750); err != nil {
+			log.Fatalf("ERROR: could not create user folder: %v", err)
+			return
+		}
+
+		f,err:=os.Create("/data/aigogo/"+sd.ID+"/test.json")
+		if err!=nil {
+			log.Fatalf("ERROR: could not create test.json: %v", err)
+			return
+		}
+		defer f.Close()
+
+		f.Write(dat)
+
+		fmt.Fprintf(w, "data write request received: %#v", sd)
+	}
+	http.HandleFunc("/data", dataWrite)
+
 	life := func(w http.ResponseWriter, r *http.Request) {
 		latlng := r.FormValue("latlng")
 		meaningOfLife(w, r.FormValue("loc"), time.Now().In(tzLoc(latlng)).Format("Monday, 03:04PM, 2 January 2006"))
@@ -137,6 +180,11 @@ func init() {
 	collection = initDB()
 	mapsClient = initMapsClient()
 	log.Println("application initialised")
+
+	if err := os.MkdirAll("/data/aigogo", 0750); err != nil {
+		log.Fatal("ERROR: could not make aigogo data folder:", err)
+		return
+	}
 }
 
 func initEmbeddingClient() *genai.EmbeddingModel {

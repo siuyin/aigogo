@@ -112,3 +112,21 @@ function addFakeLogEntry() {
         " Neighborhood: " + sessionStorage.getItem("neighborhood") +
         "\nThe quick brown fox jumps over the lazy dog";
 }
+
+const writeDataBtn = document.getElementById("writeData");
+writeDataBtn.addEventListener("click", writeData);
+async function writeData(dat) {
+    const url = "/data";
+    const res = await fetch(url,
+        {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ ID: "123456", User: "SiuYin", TimeStr: new Date().toISOString() }),
+        });
+    let rep = "";
+    const dec = new TextDecoder("utf-8");
+    for await (const chunk of res.body) {
+        rep += dec.decode(chunk);
+    }
+    console.log(rep);
+}
