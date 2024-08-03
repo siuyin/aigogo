@@ -191,6 +191,12 @@ signOutLink.addEventListener("click", () => {
 
 function populate(selectElement, opts) {
     selectElement.innerHTML = "";
+    const placeholder = document.createElement("option");
+    placeholder.setAttribute("disabled", "");
+    placeholder.setAttribute("selected", "");
+    placeholder.setAttribute("hidden", "");
+    selectElement.appendChild(placeholder);
+
     let currentGroup;
     for (const o of opts) {
         const c0 = Array.from(o)[0];
