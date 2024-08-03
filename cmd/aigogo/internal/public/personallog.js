@@ -74,7 +74,7 @@ async function processAudio() {
         tracks[0].stop();
         playAudio();
     }
-    logText.innerHTML = "transcribing...";
+    logText.value = "transcribing...";
 }
 
 const aud = document.getElementById("audio");
@@ -91,6 +91,7 @@ async function playAudio() {
 }
 
 async function recordLogEntry(ds, blob) {
+    console.log("recording log entry");
     const url = `/data?filename=log-${encodeURIComponent(ds)}&userID=${sessionUserID}`;
     const res = await fetch(url,
         {
@@ -103,7 +104,8 @@ async function recordLogEntry(ds, blob) {
     for await (const chunk of res.body) {
         resp += dec.decode(chunk);
     }
-    logText.innerText = resp;
+    logText.value = resp;
+    console.log(`log entry response posted: ${resp}`);
 }
 
 localStorage.setItem("lastAccessTime", `${new Date().toISOString()}`);
