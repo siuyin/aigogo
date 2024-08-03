@@ -117,6 +117,16 @@ func main() {
 	}
 	http.HandleFunc("/data", dataWrite)
 
+	loadSelFunc := func(w http.ResponseWriter, r *http.Request) {
+		s := loadCustomHighlights()
+		b, err := json.Marshal(s)
+		if err != nil {
+			fmt.Fprintf(w, "could not retrieve highlights.txt file: %v", err)
+		}
+		w.Write(b)
+	}
+	http.HandleFunc("/getHighlightSelections", loadSelFunc)
+
 	life := func(w http.ResponseWriter, r *http.Request) {
 		latlng := r.FormValue("latlng")
 		meaningOfLife(w, r.FormValue("loc"), time.Now().In(tzLoc(latlng)).Format("Monday, 03:04PM, 2 January 2006"))
@@ -607,4 +617,19 @@ func processTestRequest(w http.ResponseWriter, r *http.Request) {
 	f.Write(dat)
 
 	fmt.Fprintf(w, "data write request received: %#v", sd)
+}
+
+func loadCustomHighlights() []string {
+	f, err := os.Open(dataPath + "/123456/highlights.txt")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer f.Close()
+
+	b, err := io.ReadAll(f)
+	if err != nil {
+		log.Fatal(err)
+	}
+	s:=strings.Split(string(b), "\n")
+	return s[:len(s)-1]
 }

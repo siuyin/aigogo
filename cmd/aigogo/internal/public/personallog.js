@@ -29,7 +29,7 @@ async function saveEditedLogText() {
     const res = await fetch(url,
         {
             method: "POST",
-            headers: { "Content-Type": "test/plain" },
+            headers: { "Content-Type": "text/plain" },
             body: logText.value,
         });
     let resp = "";
@@ -188,6 +188,7 @@ function getUser() {
     sessionStorage.setItem("userID", "123456");
     sessionUserID = "123456";
     userName = "Kit Siew";
+    getHighlightSelections();
     showMainScreen();
 }
 
@@ -197,3 +198,34 @@ signOutLink.addEventListener("click", () => {
     sessionUserID = "";
     checkSignIn();
 });
+
+function populate(selectElement, opts) {
+    selectElement.innerHTML = "";
+    let currentGroup;
+    for (const o of opts) {
+        const c0 = Array.from(o)[0];
+        if (c0 == " ") {
+            const opt = document.createElement("option");
+            opt.innerText = o;
+            opt.value = currentGroup + ":" + o.slice(1);
+            selectElement.appendChild(opt);
+            continue;
+        }
+        const opt = document.createElement("optgroup");
+        opt.setAttribute("label", o)
+        currentGroup = o;
+        selectElement.appendChild(opt);
+    }
+}
+
+async function getHighlightSelections() {
+    try {
+        const url = `/getHighlightSelections?userID=${sessionUserID}`
+        const res = await fetch(url);
+        const hi = await res.json();
+        populate(primaryHighlight, hi);
+        populate(secondaryHighlight, hi);
+    } catch (err) {
+        console.error(err);
+    }
+}
