@@ -176,6 +176,7 @@ function showSignOnScreen() {
 function showMainScreen() {
     userSignInDiv.classList.add("hide");
     mainScreenDiv.classList.remove("hide");
+    userName = "Kit Siew";
     userNameSpan.innerText = userName;
 }
 
@@ -189,3 +190,10 @@ function getUser() {
     userName = "Kit Siew";
     showMainScreen();
 }
+
+const signOutLink = document.getElementById("signOut");
+signOutLink.addEventListener("click", () => {
+    sessionStorage.setItem("userID", "");
+    sessionUserID = "";
+    checkSignIn();
+});
