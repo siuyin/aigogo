@@ -459,6 +459,8 @@ func saveAudioLog(w http.ResponseWriter, r *http.Request) {
 
 func transcribeAudio(dat []byte, w http.ResponseWriter) {
 	customNames := loadCustomNames()
+	cl.Model.SystemInstruction = &genai.Content{
+		Parts: []genai.Part{genai.Text("")}}
 	prompt := fmt.Sprintf(`Please transcribe the following audio.
 	If you come across terms that you are unfamiliar with look up the following table to see one of the entries matches:
 	%s`, customNames)

@@ -96,7 +96,7 @@ async function playAudio() {
     aud.title = `log-${ds}.ogg`
     aud.play();
     sessionStorage.setItem("logDate", ds);
-    await recordLogEntry(ds, blob);
+    recordLogEntry(ds, blob);
     updateQueryFunctions();
 }
 
