@@ -196,10 +196,28 @@ func initAigogoDataPath() {
 		return
 	}
 }
-
 func augmentGenerationWithDoc(w http.ResponseWriter, r *http.Request, doc []string) {
-	//writeRetrievedDocs(w, doc)
-	userPrompt := r.FormValue("userPrompt")
+	defineSystemInstructionWithDocs(doc, r)
+	streamResponseFromUserPrompt(r.FormValue("userPrompt"), w)
+}
+func streamResponseFromUserPrompt(userPrompt string, w http.ResponseWriter) {
+	log.Println("calling generate content stream with: ", userPrompt)
+	iter := cl.Model.GenerateContentStream(context.Background(),
+		genai.Text(userPrompt))
+	for {
+		resp, err := iter.Next()
+		if err == iterator.Done {
+			break
+		}
+		if err != nil {
+			io.WriteString(w, "<p>hmm.. apparently I have an issue:"+err.Error())
+			return
+		}
+		fPrintResponse(w, resp)
+	}
+}
+
+func defineSystemInstructionWithDocs(doc []string, r *http.Request) {
 	location := r.FormValue("loc")
 	latlng := r.FormValue("latlng")
 	weatherJSON := r.FormValue("weather")
@@ -261,20 +279,6 @@ func augmentGenerationWithDoc(w http.ResponseWriter, r *http.Request, doc []stri
 			doc[0], doc[1], currentTime, tzLoc(latlng).String(), location, weatherJSON))},
 	}
 
-	log.Println("calling generate content stream with: ", userPrompt)
-	iter := cl.Model.GenerateContentStream(context.Background(),
-		genai.Text(userPrompt))
-	for {
-		resp, err := iter.Next()
-		if err == iterator.Done {
-			break
-		}
-		if err != nil {
-			io.WriteString(w, "<p>hmm.. apparently I have an issue:"+err.Error())
-			return
-		}
-		fPrintResponse(w, resp)
-	}
 }
 
 func getLocationAPIResp(r *http.Request) *http.Response {
