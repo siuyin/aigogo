@@ -560,7 +560,7 @@ func summarize(dat []byte, w http.ResponseWriter) []byte {
 	return b.Bytes()
 }
 func saveEditedLog(w http.ResponseWriter, r *http.Request) []byte {
-	metadata := fmt.Sprintf("\n---\nlatlng:%s, neighborhood:%s, primaryHighlight:%s, secondaryHiglight:%s, people:%s",
+	metadata := fmt.Sprintf("\n---\nlatlng:%s, neighborhood:%s, primaryHighlight:%s, secondaryHighlight:%s, people:%s",
 		r.FormValue("latlng"), r.FormValue("neighborhood"), r.FormValue("primary"), r.FormValue("secondary"),
 		r.FormValue("people"))
 
