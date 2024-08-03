@@ -20,12 +20,11 @@ const logText = document.getElementById("logText");
 const saveEditedText = document.getElementById("saveEditedText");
 saveEditedText.addEventListener("click", saveEditedLogText);
 
-// summary.innerHTML = `summary: ${logText.value} <p>tags: Primary=${primaryHighlight.value}, Secondary=${secondaryHighlight.value}, People=${selectedPeople(whoIWasWith.selectedOptions)}`;
 async function saveEditedLogText() {
     const ds = sessionStorage.getItem("logDate");
     const latlng = sessionStorage.getItem("latlng");
     const neighborhood = sessionStorage.getItem("neighborhood");
-    const url = `/data?editedlog=log-${encodeURIComponent(ds)}&userID=${sessionUserID}&latlng=${latlng}&neighborhood=${neighborhood}&primary=${primaryHighlight.value}&secondary=${secondaryHighlight.value}&people=${selectedPeople(whoIWasWith.selectedOptions)}`;
+    const url = `/data?editedlog=log-${encodeURIComponent(ds)}&userID=${sessionUserID}&latlng=${latlng}&neighborhood=${neighborhood}&primary=${primaryHighlight.value}&secondary=${secondaryHighlight.value}&people=${whoIWasWith.value}`;
     const res = await fetch(url,
         {
             method: "POST",
@@ -46,15 +45,6 @@ const secondaryHighlight = document.getElementById("secondaryHighlight");
 const whoIWasWith = document.getElementById("whoIWasWith");
 
 const queryFunctions = document.getElementById("queryFunctions");
-
-
-function selectedPeople(peoplelist) {
-    let ret = [];
-    for (const p of peoplelist) {
-        ret.push(p.innerText);
-    }
-    return ret.join("|");
-}
 
 let mediaRecorder;
 let audioStream;
@@ -218,14 +208,17 @@ function populate(selectElement, opts) {
     }
 }
 
+let customHighlights = JSON.parse(sessionStorage.getItem("customHighlights"));
 async function getHighlightSelections() {
     try {
         const url = `/getHighlightSelections?userID=${sessionUserID}`
         const res = await fetch(url);
-        const hi = await res.json();
-        populate(primaryHighlight, hi);
-        populate(secondaryHighlight, hi);
+        sessionStorage.setItem("customHighlights", await res.text())
+        populate(primaryHighlight, customHighlights);
+        populate(secondaryHighlight, customHighlights);
     } catch (err) {
         console.error(err);
     }
 }
+populate(primaryHighlight, customHighlights);
+populate(secondaryHighlight, customHighlights);
