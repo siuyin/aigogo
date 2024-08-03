@@ -91,7 +91,6 @@ async function playAudio() {
 }
 
 async function recordLogEntry(ds, blob) {
-    console.log("recording log entry");
     const url = `/data?filename=log-${encodeURIComponent(ds)}&userID=${sessionUserID}`;
     const res = await fetch(url,
         {
@@ -105,7 +104,6 @@ async function recordLogEntry(ds, blob) {
         resp += dec.decode(chunk);
     }
     logText.value = resp;
-    console.log(`log entry response posted: ${resp}`);
 }
 
 localStorage.setItem("lastAccessTime", `${new Date().toISOString()}`);
