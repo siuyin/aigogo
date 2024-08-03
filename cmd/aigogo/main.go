@@ -507,7 +507,7 @@ func saveEditedLogAndSummary(w http.ResponseWriter, r *http.Request) {
 	summary := summarize(editedLog, w)
 	sm := logFile{
 		userID:   r.FormValue("userID"),
-		basename: r.FormValue("editedLog"),
+		basename: r.FormValue("editedlog"),
 		ext:      "summary.txt",
 		body:     summary,
 	}
@@ -544,7 +544,7 @@ func saveEditedLog(w http.ResponseWriter, r *http.Request) []byte {
 
 	editedLog := logFile{
 		userID:   r.FormValue("userID"),
-		basename: r.FormValue("editedLog"),
+		basename: r.FormValue("editedlog"),
 		ext:      "txt",
 		body:     dat,
 	}
