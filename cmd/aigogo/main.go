@@ -112,7 +112,7 @@ func main() {
 		}
 		editedlog := r.FormValue("editedlog")
 		if editedlog != "" {
-			saveEditedLog(w, r)
+			saveEditedLogAndSummary(w, r)
 		}
 	}
 	http.HandleFunc("/data", dataWrite)
@@ -196,12 +196,6 @@ func initAigogoDataPath() {
 		return
 	}
 }
-
-// func writeRetrievedDocs(w http.ResponseWriter, doc []string) {
-// 	for _, d := range doc {
-// 		io.WriteString(w, "<p>"+d+"</p>")
-// 	}
-// }
 
 func augmentGenerationWithDoc(w http.ResponseWriter, r *http.Request, doc []string) {
 	//writeRetrievedDocs(w, doc)
@@ -455,23 +449,11 @@ type sampleData struct {
 }
 
 func saveAudioLog(w http.ResponseWriter, r *http.Request) {
-	fn := r.FormValue("filename")
-	userID := r.FormValue("userID")
-	dat, err := io.ReadAll(r.Body)
-	if err != nil {
-		fmt.Fprintf(w, "could not read request body: %v", err)
-		return
-	}
+	aud := saveAudioFile(w, r)
+	transcribeAudio(aud, w)
+}
 
-	f, err := os.Create(dataPath + "/" + userID + "/" + fn + ".ogg")
-	if err != nil {
-		log.Fatalf("ERROR: could not create %s.ogg: %v", fn, err)
-		return
-	}
-	defer f.Close()
-
-	f.Write(dat)
-
+func transcribeAudio(dat []byte, w http.ResponseWriter) {
 	prompt := "Please transcribe the following audio."
 	resp, err := cl.Model.GenerateContent(context.Background(), genai.Blob{MIMEType: "audio/ogg", Data: dat}, genai.Text(prompt))
 	if err != nil {
@@ -481,10 +463,70 @@ func saveAudioLog(w http.ResponseWriter, r *http.Request) {
 	gfmt.FprintResponse(w, resp)
 }
 
-func saveEditedLog(w http.ResponseWriter, r *http.Request) {
-	editedlog := r.FormValue("editedlog")
-	userID := r.FormValue("userID")
+func saveAudioFile(w http.ResponseWriter, r *http.Request) []byte {
+	dat, err := io.ReadAll(r.Body)
+	if err != nil {
+		fmt.Fprintf(w, "could not read request body: %v", err)
+		return []byte{}
+	}
+	af := logFile{
+		userID:   r.FormValue("userID"),
+		basename: r.FormValue("filename"),
+		ext:      "ogg",
+		body:     dat,
+	}
+	createFile(af)
 
+	return dat
+}
+
+type logFile struct {
+	userID   string
+	basename string
+	ext      string
+	body     []byte
+}
+
+func createFile(lf logFile) {
+	f, err := os.Create(dataPath + "/" + lf.userID + "/" + lf.basename + "." + lf.ext)
+	if err != nil {
+		log.Fatalf("ERROR: could not create %s.%s: %v", lf.basename, lf.ext, err)
+		return
+	}
+	defer f.Close()
+
+	f.Write(lf.body)
+}
+
+func saveEditedLogAndSummary(w http.ResponseWriter, r *http.Request) {
+	editedLog := saveEditedLog(w, r)
+	summary := summarize(editedLog, w)
+	sm := logFile{
+		userID:   r.FormValue("userID"),
+		basename: r.FormValue("editedLog"),
+		ext:      "summary.txt",
+		body:     summary,
+	}
+	createFile(sm)
+}
+
+func summarize(dat []byte, w http.ResponseWriter) []byte {
+	prompt := fmt.Sprintf(`Please summarize the following text in the first person.
+	Keep the metadata (lines following the ---) intact:
+	%s`, dat)
+	resp, err := cl.Model.GenerateContent(context.Background(), genai.Text(prompt))
+	if err != nil {
+		log.Printf("WARNING: summarization failure: %v", err)
+		return []byte{}
+	}
+	gfmt.FprintResponse(w, resp)
+
+	var b bytes.Buffer
+	gfmt.FprintResponse(&b, resp)
+
+	return b.Bytes()
+}
+func saveEditedLog(w http.ResponseWriter, r *http.Request) []byte {
 	metadata := fmt.Sprintf("\n---\nlatlng:%s, neighborhood:%s, primaryHighlight:%s, secondaryHiglight:%s, people:%s",
 		r.FormValue("latlng"), r.FormValue("neighborhood"), r.FormValue("primary"), r.FormValue("secondary"),
 		r.FormValue("people"))
@@ -492,40 +534,18 @@ func saveEditedLog(w http.ResponseWriter, r *http.Request) {
 	dat, err := io.ReadAll(r.Body)
 	if err != nil {
 		fmt.Fprintf(w, "could not read request body: %v", err)
-		return
+		return []byte{}
 	}
+	dat = []byte(string(dat) + metadata)
 
-	f, err := os.Create(dataPath + "/" + userID + "/" + editedlog + ".txt")
-	if err != nil {
-		log.Fatalf("ERROR: could not create %s.txt: %v", editedlog, err)
-		return
+	editedLog := logFile{
+		userID:   r.FormValue("userID"),
+		basename: r.FormValue("editedLog"),
+		ext:      "txt",
+		body:     dat,
 	}
-	defer f.Close()
-
-	dat = []byte(string(dat)+metadata)
-	f.Write(dat)
-
-	prompt := fmt.Sprintf(`Please summarize the following text in the first person.
-	Keep the metadata (lines following the ---) intact:
-	%s`,dat)
-	resp, err := cl.Model.GenerateContent(context.Background(), genai.Text(prompt))
-	if err != nil {
-		log.Printf("WARNING: summarization failure: %v", err)
-		return
-	}
-	gfmt.FprintResponse(w, resp)
-
-	var b bytes.Buffer
-	gfmt.FprintResponse(&b,resp)
-
-	s, err := os.Create(dataPath + "/" + userID + "/" + editedlog + ".summary.txt")
-	if err != nil {
-		log.Fatalf("ERROR: could not create %s.summary.txt: %v", editedlog, err)
-		return
-	}
-	defer s.Close()
-
-	s.Write(b.Bytes())
+	createFile(editedLog)
+	return dat
 }
 
 func processTestRequest(w http.ResponseWriter, r *http.Request) {
