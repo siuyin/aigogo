@@ -458,13 +458,30 @@ func saveAudioLog(w http.ResponseWriter, r *http.Request) {
 }
 
 func transcribeAudio(dat []byte, w http.ResponseWriter) {
-	prompt := "Please transcribe the following audio."
+	customNames := loadCustomNames()
+	prompt := fmt.Sprintf(`Please transcribe the following audio.
+	If you come across terms that you are unfamiliar with look up the following table to see one of the entries matches:
+	%s`, customNames)
 	resp, err := cl.Model.GenerateContent(context.Background(), genai.Blob{MIMEType: "audio/ogg", Data: dat}, genai.Text(prompt))
 	if err != nil {
 		log.Printf("WARNING: transcription failure: %v", err)
 		return
 	}
 	gfmt.FprintResponse(w, resp)
+}
+
+func loadCustomNames() string {
+	f, err := os.Open(dataPath + "/123456/names.txt")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer f.Close()
+
+	b, err := io.ReadAll(f)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return string(b)
 }
 
 func saveAudioFile(w http.ResponseWriter, r *http.Request) []byte {
