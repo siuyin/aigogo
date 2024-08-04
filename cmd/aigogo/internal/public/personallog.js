@@ -8,10 +8,12 @@ allowRecording(true);
 function allowRecording(s) {
     if (s == true) {
         recLogBtn.disabled = false;
+        recLogBtn.innerText = "Record Log";
         recStopBtn.disabled = true;
         return
     }
     recLogBtn.disabled = true;
+    recLogBtn.innerText = "recording";
     recStopBtn.disabled = false;
 }
 
