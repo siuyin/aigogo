@@ -27,7 +27,7 @@ async function memGen() {
     try {
         modelResponse.innerText = "";
         await streamToElement(modelResponse, url);
-        // await fetchAndDisplay(url);
+        updtPersonalLogRef();
     } catch (err) {
         console.error(err.message);
     }
@@ -43,4 +43,15 @@ async function streamToElement(el, url) {
         tmp += (dec.decode(chunk));
     }
     el.innerHTML = marked.parse(tmp);
+}
+
+function updtPersonalLogRef() {
+    const refs = document.querySelectorAll("a.popup");
+    for (const r of refs) {
+        r.addEventListener("click",(ev)=>{
+            ev.preventDefault();
+            alert(ev.target.innerHTML);
+        });
+        console.log(r.innerHTML);
+    }
 }

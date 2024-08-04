@@ -94,6 +94,10 @@ func main() {
 	}
 	http.HandleFunc("/memgen", memGenFunc)
 
+	http.HandleFunc("/ref", func(w http.ResponseWriter, r *http.Request) {
+		personalLogDetails(w, r)
+	})
+
 	retrievalFunc := func(w http.ResponseWriter, r *http.Request) {
 		qry := r.FormValue("userPrompt")
 		doc := retrieveDocsForAugmentation(r, qry)
@@ -677,9 +681,9 @@ func generateMemories(logEntr []string, w http.ResponseWriter, r *http.Request) 
 		You  aim to entertain and engage with the
 		person to maintain her mental acuity and to stave off dementia.
 
-		When quoting event, please explicity state the day, date and time.
-		You can derive this from the log entry line similar to:
-		"log-2024-08-04T02:25:10.513Z"
+		When quoting event, please state the day, date and/or time as appropriate.
+		Extract the day,date and time from the 
+		log entry line (eg. "log-2024-08-04T02:25:10.513Z").
 		
 		If the data provided in the user prompt is not relevant, you may
 		extrapolate and generate content. However you must explicitly state
@@ -687,6 +691,8 @@ func generateMemories(logEntr []string, w http.ResponseWriter, r *http.Request) 
 
 		At the end of your output you must quote the log entries
 		just only the lines similar to "log-2024-08-04T02:25:10.513Z",
+		wrapped in html links similar to
+		<a href="/ref?log=log-2024-08-04T02:25:10.513Z" class="popup">log-2024-08-04T02:25:10.513Z</a>
 		comma seperated,
 		preceeded by "ref:[" and closed with "]". 
 		`)},
@@ -716,7 +722,7 @@ func getLogEntries(logEntr []string, userID string) string {
 	s := ""
 	for _, e := range logEntr {
 		bn := logBasename(e)
-		body := getBody(e, userID)
+		body := getBody(bn+".txt", userID) // use the transcript and not the summary
 		s += bn + ":\n" + body + "\n\n"
 	}
 	return s
@@ -743,5 +749,10 @@ func writeLogEntryMarkdown(logEntr []string, w http.ResponseWriter, r *http.Requ
 		s += fmt.Sprintln(getBody(e, r.FormValue("userID")))
 		s += fmt.Sprintln(`\n[transcript](/)  [audio](/)\n\n`)
 	}
-	io.WriteString(w,s)
+	io.WriteString(w, s)
+}
+
+func personalLogDetails(w http.ResponseWriter, r *http.Request) {
+	io.WriteString(w, "TODO:")
+	io.WriteString(w, r.FormValue("log"))
 }
