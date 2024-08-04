@@ -8,7 +8,9 @@ import (
 	"fmt"
 	"html/template"
 	"io"
+	"io/fs"
 	"log"
+	"math/rand"
 	"net/http"
 	"os"
 	"runtime"
@@ -76,9 +78,15 @@ func main() {
 		if err := tmpl.ExecuteTemplate(w, "main.html", tmplDat{Body: "personallog", JS: "/personallog.js"}); err != nil {
 			io.WriteString(w, err.Error())
 		}
-
 	}
 	http.HandleFunc("/personallog", personalLogFunc)
+
+	memoriesFunc:=func(w http.ResponseWriter,r *http.Request){
+		if err := tmpl.ExecuteTemplate(w, "main.html", tmplDat{Body: "memories", JS: "/memories.js"}); err != nil {
+			io.WriteString(w, err.Error())
+		}
+	}
+	http.HandleFunc("/memories",memoriesFunc)
 
 	retrievalFunc := func(w http.ResponseWriter, r *http.Request) {
 		qry := r.FormValue("userPrompt")
@@ -630,6 +638,27 @@ func loadCustomHighlights() []string {
 	if err != nil {
 		log.Fatal(err)
 	}
-	s:=strings.Split(string(b), "\n")
+	s := strings.Split(string(b), "\n")
 	return s[:len(s)-1]
+}
+
+func personalLogEntries(userID string) []string {
+	d := os.DirFS(dataPath + "/" + userID)
+	m, err := fs.Glob(d, "*.summary.txt")
+	if err != nil {
+		log.Fatal(err)
+	}
+	return m
+}
+
+func randSelection(list []string, n int) []string{
+	if l := len(list); l < n {
+		n = l
+	}
+	perms:=rand.Perm(n)
+	s:=[]string{}
+	for _,p:=range perms {
+		s=append(s,list[p])
+	}
+	return s
 }

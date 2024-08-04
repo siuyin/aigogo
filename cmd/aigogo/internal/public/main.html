@@ -8,6 +8,7 @@
 <body>
     {{if eq .Body "main"}} {{template "mainbody.html" .JS}}
     {{else if eq .Body "personallog"}} {{template "personallogbody.html" .JS}}
+    {{else if eq .Body "memories"}} {{template "memoriesbody.html" .JS}}
     {{end}}
     {{template "footer.html"}}
 </body>

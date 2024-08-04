@@ -134,15 +134,26 @@ function recordSelectedContext(ctx) {
 }
 recordSelectedContext("General");
 
+const personalLogBtn = document.getElementById("personalLog");
+const activitiesBtn = document.getElementById("activities");
+const activitiesDiv = document.getElementById("activitiesScreen");
+activitiesDiv.classList.add("hide");
+
+personalLogBtn.addEventListener("click", () => {
+    window.location.replace("/personallog");
+});
+
+activitiesBtn.addEventListener("click", showActivitiesScreen);
+
 const selectedSuggestion = document.getElementById("selected-suggestion");
 selectedSuggestion.addEventListener("change", (ev) => {
-    if (ev.target.value == "personal-log") {
-        window.location.replace("/personallog");
-        return;
-    }
     copySelectedSuggestionToUserPrompt(ev.target.value)
 });
 function copySelectedSuggestionToUserPrompt(prompt) {
     userPrompt.value = prompt;
     console.log(prompt);
 }
+
+function showActivitiesScreen() {
+    activitiesDiv.classList.remove("hide");
+} 

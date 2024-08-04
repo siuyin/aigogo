@@ -15,4 +15,17 @@ func TestTimezone(t *testing.T) {
 	}
 }
 
+func TestPersonalLogEntries(t *testing.T) {
+	le := personalLogEntries("123456")
+	if n := len(le); n == 0 {
+		t.Errorf("number of entries: %v should not be zero", n)
+	}
+}
 
+func TestRandSlection(t *testing.T) {
+	list := personalLogEntries("123456")
+	sample := randSelection(list, 5)
+	if len(sample) == 0 {
+		t.Errorf("sample:%#v should not be empty", sample)
+	}
+}

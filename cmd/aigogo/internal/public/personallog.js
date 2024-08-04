@@ -228,3 +228,8 @@ async function getHighlightSelections() {
 }
 populate(primaryHighlight, customHighlights);
 populate(secondaryHighlight, customHighlights);
+
+const memoriesBtn = document.getElementById("memories");
+memoriesBtn.addEventListener("click", () => {
+    window.location.replace("/memories");
+})
