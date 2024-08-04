@@ -670,7 +670,6 @@ func randSelection(list []string, n int) []string {
 }
 
 func generateMemories(logEntr []string, w http.ResponseWriter, r *http.Request) {
-	// fmt.Fprintf(w,"userID: %s retrieved: %v",r.FormValue("userID"),logEntr)
 	cl.Model.SystemInstruction = &genai.Content{
 		Parts: []genai.Part{genai.Text(`You are a young personal
 		assitant to an older person. You have a bubbly and cheerful personality. 
@@ -685,6 +684,11 @@ func generateMemories(logEntr []string, w http.ResponseWriter, r *http.Request) 
 		If the data provided in the user prompt is not relevant, you may
 		extrapolate and generate content. However you must explicitly state
 		that you are doing this.
+
+		At the end of your output you must quote the log entries
+		just only the lines similar to "log-2024-08-04T02:25:10.513Z",
+		comma seperated,
+		preceeded by "ref:[" and closed with "]". 
 		`)},
 	}
 	logEntries := getLogEntries(logEntr, r.FormValue("userID"))
@@ -712,14 +716,14 @@ func getLogEntries(logEntr []string, userID string) string {
 	s := ""
 	for _, e := range logEntr {
 		bn := logBasename(e)
-		body := getBody(dataPath + "/" + userID + "/" + e)
+		body := getBody(e, userID)
 		s += bn + ":\n" + body + "\n\n"
 	}
 	return s
 }
 
-func getBody(fn string) string {
-	f, err := os.Open(fn)
+func getBody(fn string, userID string) string {
+	f, err := os.Open(dataPath + "/" + userID + "/" + fn)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -730,4 +734,14 @@ func getBody(fn string) string {
 		log.Fatal(err)
 	}
 	return string(b)
+}
+
+func writeLogEntryMarkdown(logEntr []string, w http.ResponseWriter, r *http.Request) {
+	s := "\n\n"
+	for _, e := range logEntr {
+		s += fmt.Sprintf("%s:\n\n", logBasename(e))
+		s += fmt.Sprintln(getBody(e, r.FormValue("userID")))
+		s += fmt.Sprintln(`\n[transcript](/)  [audio](/)\n\n`)
+	}
+	io.WriteString(w,s)
 }

@@ -46,7 +46,6 @@ const primaryHighlight = document.getElementById("primaryHighlight");
 const secondaryHighlight = document.getElementById("secondaryHighlight");
 const whoIWasWith = document.getElementById("whoIWasWith");
 
-const queryFunctions = document.getElementById("queryFunctions");
 
 let mediaRecorder;
 let audioStream;
@@ -89,7 +88,6 @@ async function playAudio() {
     aud.play();
     sessionStorage.setItem("logDate", ds);
     recordLogEntry(ds, blob);
-    updateQueryFunctions();
 }
 
 async function recordLogEntry(ds, blob) {
@@ -110,9 +108,6 @@ async function recordLogEntry(ds, blob) {
 
 localStorage.setItem("lastAccessTime", `${new Date().toISOString()}`);
 
-function updateQueryFunctions() {
-    queryFunctions.innerHTML = "TODO: query functions";
-}
 
 async function blobToDataURL(b) {
     try {

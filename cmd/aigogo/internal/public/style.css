@@ -71,3 +71,7 @@ textarea {
     /* visibility: collapse; */
     display: none;
 }
+
+.summary {
+    background-color: lightblue;
+}
