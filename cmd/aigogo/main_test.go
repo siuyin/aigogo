@@ -29,3 +29,18 @@ func TestRandSlection(t *testing.T) {
 		t.Errorf("sample:%#v should not be empty", sample)
 	}
 }
+
+func TestLogBasename(t *testing.T) {
+	fn := "log-2024-08-04T02:25:10.513Z.summary.txt"
+	if bn := logBasename(fn); bn != "log-2024-08-04T02:25:10.513Z" {
+		t.Errorf("basename should not be %s", bn)
+	}
+}
+
+func TestGetLogEntries(t *testing.T) {
+	logEntr := randSelection(personalLogEntries("123456"), 5)
+	s := getLogEntries(logEntr,"123456")
+	if s == "" {
+		t.Errorf("%s: should not be empty", s)
+	}
+}

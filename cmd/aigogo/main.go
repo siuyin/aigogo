@@ -81,12 +81,18 @@ func main() {
 	}
 	http.HandleFunc("/personallog", personalLogFunc)
 
-	memoriesFunc:=func(w http.ResponseWriter,r *http.Request){
+	memoriesFunc := func(w http.ResponseWriter, r *http.Request) {
 		if err := tmpl.ExecuteTemplate(w, "main.html", tmplDat{Body: "memories", JS: "/memories.js"}); err != nil {
 			io.WriteString(w, err.Error())
 		}
 	}
-	http.HandleFunc("/memories",memoriesFunc)
+	http.HandleFunc("/memories", memoriesFunc)
+
+	memGenFunc := func(w http.ResponseWriter, r *http.Request) {
+		logEntr := randSelection(personalLogEntries(r.FormValue("userID")), 5)
+		generateMemories(logEntr, w, r)
+	}
+	http.HandleFunc("/memgen", memGenFunc)
 
 	retrievalFunc := func(w http.ResponseWriter, r *http.Request) {
 		qry := r.FormValue("userPrompt")
@@ -651,14 +657,77 @@ func personalLogEntries(userID string) []string {
 	return m
 }
 
-func randSelection(list []string, n int) []string{
+func randSelection(list []string, n int) []string {
 	if l := len(list); l < n {
 		n = l
 	}
-	perms:=rand.Perm(n)
-	s:=[]string{}
-	for _,p:=range perms {
-		s=append(s,list[p])
+	perms := rand.Perm(n)
+	s := []string{}
+	for _, p := range perms {
+		s = append(s, list[p])
 	}
 	return s
+}
+
+func generateMemories(logEntr []string, w http.ResponseWriter, r *http.Request) {
+	// fmt.Fprintf(w,"userID: %s retrieved: %v",r.FormValue("userID"),logEntr)
+	cl.Model.SystemInstruction = &genai.Content{
+		Parts: []genai.Part{genai.Text(`You are a young personal
+		assitant to an older person. You have a bubbly and cheerful personality. 
+		If asked, your name is AiGoGo.
+		You  aim to entertain and engage with the
+		person to maintain her mental acuity and to stave off dementia.
+
+		When quoting event, please explicity state the day, date and time.
+		You can derive this from the log entry line similar to:
+		"log-2024-08-04T02:25:10.513Z"
+		
+		If the data provided in the user prompt is not relevant, you may
+		extrapolate and generate content. However you must explicitly state
+		that you are doing this.
+		`)},
+	}
+	logEntries := getLogEntries(logEntr, r.FormValue("userID"))
+	userPrompt := r.FormValue("userPrompt") + "\n" + logEntries
+	iter := cl.Model.GenerateContentStream(context.Background(),
+		genai.Text(userPrompt))
+	for {
+		resp, err := iter.Next()
+		if err == iterator.Done {
+			break
+		}
+		if err != nil {
+			io.WriteString(w, "<p>hmm.. apparently I have an issue:"+err.Error())
+			return
+		}
+		fPrintResponse(w, resp)
+	}
+}
+
+func logBasename(fn string) string {
+	return strings.Split(fn, ".summary.txt")[0]
+}
+
+func getLogEntries(logEntr []string, userID string) string {
+	s := ""
+	for _, e := range logEntr {
+		bn := logBasename(e)
+		body := getBody(dataPath + "/" + userID + "/" + e)
+		s += bn + ":\n" + body + "\n\n"
+	}
+	return s
+}
+
+func getBody(fn string) string {
+	f, err := os.Open(fn)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer f.Close()
+
+	b, err := io.ReadAll(f)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return string(b)
 }

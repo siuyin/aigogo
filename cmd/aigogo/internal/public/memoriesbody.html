@@ -1,5 +1,28 @@
 <h1>Memories and more</h1>
-<p>AiGoGo here. Let me help you use your personal log jog your memory.</p>
+<p>AiGoGo here. Let me help you use your personal log to jog your memory.</p>
+
+<select name="suggestions" id="selected-suggestion">
+    <option value="" disabled selected hidden>Click here for suggestions</option>
+    <option value="Please write a short essay based on my personal log entries:">
+        Jog my memory</option>"
+    <option value="Please suggest a list of songs based on my personal log entries:">
+        Songs I like</option>"
+    <option value="Please list holiday venues I may have visited based on my personal log entries:">
+        Holidays</option>"
+    <option value="Please write a short essay on the people I interacted with based on my personal log entries:">
+        People</option>"
+    <option value="Please write a short essay on the food I tried based on my personal log entries:">
+        Food Adventure</option>"
+    <option value="Please write a short essay on the happy events I experienced based on my personal log entries:">
+        Happy Events</option>"
+    <option value="Please write a short essay on the sad events I experienced based on my personal log entries:">
+        Sad Events</option>"
+</select>
+
+<textarea id="userPrompt" name=""></textarea>
+<button id="userSubmit" name="userSubmit">Ask AiGoGo</button>
+
+<div id="modelResponse"></div>
 
 <div class="horizontal">
     <a href="/personallog">Back to Personal Log page</a>
