@@ -53,7 +53,8 @@ async function retrieveDocsForAugmentation() {
     let usrQry = encodeURIComponent(userPrompt.value);
     let ctx = encodeURIComponent(sessionStorage.getItem("context"));
     let weather = encodeURIComponent(sessionStorage.getItem("weatherForecastJSON"));
-    const url = `/retr?userPrompt=${usrQry}&loc=${loc}&latlng=${sessionStorage.getItem("latlng")}&ctx=${ctx}&weather=${weather}`;
+    const url = `https://aigogo-onsvm4sjba-uc.a.run.app/retr?userPrompt=${usrQry}&loc=${loc}&latlng=${sessionStorage.getItem("latlng")}&ctx=${ctx}&weather=${weather}`;
+    // const url = `/retr?userPrompt=${usrQry}&loc=${loc}&latlng=${sessionStorage.getItem("latlng")}&ctx=${ctx}&weather=${weather}`;
 
     embeddingResponse.innerHTML = "working ... give me a few seconds ..."
     try {

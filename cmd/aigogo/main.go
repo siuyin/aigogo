@@ -99,7 +99,6 @@ func main() {
 	})
 
 	retrievalFunc := func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Language","en")
 		qry := r.FormValue("userPrompt")
 		doc := retrieveDocsForAugmentation(r, qry)
 		if len(doc) == 0 {
