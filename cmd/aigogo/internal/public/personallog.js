@@ -1,55 +1,60 @@
+const userSignInDiv = document.getElementById("userSignIn");
+const userID = document.getElementById("userID");
+
+const userSignInBtn = document.getElementById("userIDSubmit");
+userSignInBtn.addEventListener("click", getUser)
+
+const mainScreenDiv = document.getElementById("mainScreen");
+
+const writeDataBtn = document.getElementById("writeData");
+writeDataBtn.addEventListener("click", writeData);
+
+const userNameSpan = document.getElementById("userNameSpan");
+
+const signOutLink = document.getElementById("signOut");
+signOutLink.addEventListener("click", signOut);
+
+const memoriesBtn = document.getElementById("memories");
+memoriesBtn.addEventListener("click", () => {
+    window.location.replace("/memories");
+})
+
 const recLogBtn = document.getElementById("recordLog");
 recLogBtn.addEventListener("click", () => { captureAudio(); });
 
 const recStopBtn = document.getElementById("recordStop");
 recStopBtn.addEventListener("click", () => { processAudio(); });
-allowRecording(true);
-
-function allowRecording(s) {
-    if (s == true) {
-        recLogBtn.disabled = false;
-        recLogBtn.innerText = "Record Log";
-        recStopBtn.disabled = true;
-        return
-    }
-    recLogBtn.disabled = true;
-    recLogBtn.innerText = "recording";
-    recStopBtn.disabled = false;
-}
+const aud = document.getElementById("audio");
 
 const logText = document.getElementById("logText");
 
 const saveEditedText = document.getElementById("saveEditedText");
 saveEditedText.addEventListener("click", saveEditedLogText);
 
-async function saveEditedLogText() {
-    const ds = sessionStorage.getItem("logDate");
-    const latlng = sessionStorage.getItem("latlng");
-    const neighborhood = sessionStorage.getItem("neighborhood");
-    const url = `/data?editedlog=log-${encodeURIComponent(ds)}&userID=${sessionUserID}&latlng=${latlng}&neighborhood=${neighborhood}&primary=${primaryHighlight.value}&secondary=${secondaryHighlight.value}&people=${whoIWasWith.value}`;
-    const res = await fetch(url,
-        {
-            method: "POST",
-            headers: { "Content-Type": "text/plain" },
-            body: logText.value,
-        });
-    let resp = "";
-    const dec = new TextDecoder("utf-8");
-    for await (const chunk of res.body) {
-        resp += dec.decode(chunk);
-    }
-    summary.innerText = resp;
-}
-
-const summary = document.getElementById("summary");
 const primaryHighlight = document.getElementById("primaryHighlight");
 const secondaryHighlight = document.getElementById("secondaryHighlight");
 const whoIWasWith = document.getElementById("whoIWasWith");
 
+const summary = document.getElementById("summary");
+
+// -------------------
+
+let userName = "";
+let sessionUserID = sessionStorage.getItem("userID") ?? "";
+checkSignIn();
 
 let mediaRecorder;
 let audioStream;
 let audioChunks = [];
+
+allowRecording(true);
+
+let customHighlights = JSON.parse(sessionStorage.getItem("customHighlights"));
+populate(primaryHighlight, customHighlights);
+populate(secondaryHighlight, customHighlights);
+
+localStorage.setItem("lastAccessTime", `${new Date().toISOString()}`);
+
 async function captureAudio() {
     try {
         audioChunks = [];
@@ -78,7 +83,37 @@ async function processAudio() {
     logText.value = "transcribing...";
 }
 
-const aud = document.getElementById("audio");
+function allowRecording(s) {
+    if (s == true) {
+        recLogBtn.disabled = false;
+        recLogBtn.innerText = "Record Log";
+        recStopBtn.disabled = true;
+        return
+    }
+    recLogBtn.disabled = true;
+    recLogBtn.innerText = "recording";
+    recStopBtn.disabled = false;
+}
+
+async function saveEditedLogText() {
+    const ds = sessionStorage.getItem("logDate");
+    const latlng = sessionStorage.getItem("latlng");
+    const neighborhood = sessionStorage.getItem("neighborhood");
+    const url = `/data?editedlog=log-${encodeURIComponent(ds)}&userID=${sessionUserID}&latlng=${latlng}&neighborhood=${neighborhood}&primary=${primaryHighlight.value}&secondary=${secondaryHighlight.value}&people=${whoIWasWith.value}`;
+    const res = await fetch(url,
+        {
+            method: "POST",
+            headers: { "Content-Type": "text/plain" },
+            body: logText.value,
+        });
+    let resp = "";
+    const dec = new TextDecoder("utf-8");
+    for await (const chunk of res.body) {
+        resp += dec.decode(chunk);
+    }
+    summary.innerText = resp;
+}
+
 async function playAudio() {
     const blob = new Blob(audioChunks, { type: 'audio/webm;codec=ogg' });
     const audioURL = URL.createObjectURL(blob);
@@ -106,9 +141,6 @@ async function recordLogEntry(ds, blob) {
     logText.value = resp;
 }
 
-localStorage.setItem("lastAccessTime", `${new Date().toISOString()}`);
-
-
 async function blobToDataURL(b) {
     try {
         const b64 = await new Promise(r => {
@@ -123,8 +155,6 @@ async function blobToDataURL(b) {
     }
 }
 
-const writeDataBtn = document.getElementById("writeData");
-writeDataBtn.addEventListener("click", writeData);
 async function writeData() {
     const url = `/data?ter=pau`;
     const res = await fetch(url,
@@ -140,12 +170,7 @@ async function writeData() {
     }
     console.log(rep);
 }
-const userSignInDiv = document.getElementById("userSignIn");
-const mainScreenDiv = document.getElementById("mainScreen");
-const userNameSpan = document.getElementById("userNameSpan");
 
-let userName = "";
-let sessionUserID = sessionStorage.getItem("userID") ?? "";
 function checkSignIn() {
     if (sessionUserID == "") {
         showSignOnScreen()
@@ -153,7 +178,6 @@ function checkSignIn() {
     }
     showMainScreen();
 }
-checkSignIn();
 
 function showSignOnScreen() {
     userSignInDiv.classList.remove("hide");
@@ -167,9 +191,6 @@ function showMainScreen() {
     userNameSpan.innerText = userName;
 }
 
-const userID = document.getElementById("userID");
-const userSignInBtn = document.getElementById("userIDSubmit");
-userSignInBtn.addEventListener("click", getUser)
 function getUser() {
     console.log("return fake user id: 123456");
     sessionStorage.setItem("userID", "123456");
@@ -179,12 +200,12 @@ function getUser() {
     showMainScreen();
 }
 
-const signOutLink = document.getElementById("signOut");
-signOutLink.addEventListener("click", () => {
+function signOut() {
     sessionStorage.setItem("userID", "");
     sessionUserID = "";
     checkSignIn();
-});
+
+}
 
 function populate(selectElement, opts) {
     selectElement.innerHTML = "";
@@ -211,7 +232,6 @@ function populate(selectElement, opts) {
     }
 }
 
-let customHighlights = JSON.parse(sessionStorage.getItem("customHighlights"));
 async function getHighlightSelections() {
     try {
         const url = `/getHighlightSelections?userID=${sessionUserID}`
@@ -223,10 +243,3 @@ async function getHighlightSelections() {
         console.error(err);
     }
 }
-populate(primaryHighlight, customHighlights);
-populate(secondaryHighlight, customHighlights);
-
-const memoriesBtn = document.getElementById("memories");
-memoriesBtn.addEventListener("click", () => {
-    window.location.replace("/memories");
-})

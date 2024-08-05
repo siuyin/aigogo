@@ -1,25 +1,29 @@
-const userPrompt = document.getElementById("userPrompt");
-
 const selectedSuggestion = document.getElementById("selected-suggestion");
 selectedSuggestion.addEventListener("change", (ev) => {
     copySelectedSuggestionToUserPrompt(ev.target.value)
 });
-function copySelectedSuggestionToUserPrompt(prompt) {
-    userPrompt.value = prompt;
-}
+
+const userPrompt = document.getElementById("userPrompt");
 
 const userSubmit = document.getElementById("userSubmit");
 userSubmit.addEventListener("click", memGen);
+
+const modelResponse = document.getElementById("modelResponse");
+
+
+// ------------------------------
+
+import { marked } from "https://cdn.jsdelivr.net/npm/marked/lib/marked.esm.js";
 
 let sessionUserID = sessionStorage.getItem("userID") ?? "";
 if (sessionUserID == "") {
     window.location.replace("/personallog");
 }
 
-import { marked } from "https://cdn.jsdelivr.net/npm/marked/lib/marked.esm.js";
+function copySelectedSuggestionToUserPrompt(prompt) {
+    userPrompt.value = prompt;
+}
 
-const modelResponse = document.getElementById("modelResponse");
-// TODO
 async function memGen() {
     const url = `/memgen?userPrompt=${userPrompt.value}&userID=${sessionUserID}`;
 
