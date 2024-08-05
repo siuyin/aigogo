@@ -165,6 +165,15 @@ func main() {
 	}
 	http.HandleFunc("/getHighlightSelections", loadSelFunc)
 
+	userIDExistFunc := func(w http.ResponseWriter, r *http.Request) {
+		if r.FormValue("userID") != "123456" {
+			io.WriteString(w, "")
+			return
+		}
+		io.WriteString(w, "Kit Siew")
+	}
+	http.HandleFunc("/userIDExist", userIDExistFunc)
+
 	life := func(w http.ResponseWriter, r *http.Request) {
 		latlng := r.FormValue("latlng")
 		meaningOfLife(w, r.FormValue("loc"), time.Now().In(tzLoc(latlng)).Format("Monday, 03:04PM, 2 January 2006"))

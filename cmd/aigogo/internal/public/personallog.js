@@ -191,13 +191,31 @@ function showMainScreen() {
     userNameSpan.innerText = userName;
 }
 
-function getUser() {
-    console.log("return fake user id: 123456");
-    sessionStorage.setItem("userID", "123456");
-    sessionUserID = "123456";
-    userName = "Kit Siew";
+async function getUser() {
+    const uid = userID.value;
+    userName = await userIDExist(userID.value);
+    console.log(`un: ${userName}`);
+    if (userName == "") {
+        alert(`Sorry: ${userID.value} was not found on the system.`);
+        return;
+    }
+    sessionStorage.setItem("userID", userID.value);
+    sessionUserID = userID.value;
     getHighlightSelections();
     showMainScreen();
+}
+
+async function userIDExist(userID) {
+    try {
+        const res = await fetch(`/userIDExist?userID=${userID}`);
+        if (res.status != 200) {
+            alert("Sorry, we're having some issue with the server at this time");
+            return;
+        }
+        return await res.text();
+    } catch (err) {
+        console.error(err);
+    }
 }
 
 function signOut() {
