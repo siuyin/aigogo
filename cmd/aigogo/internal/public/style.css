@@ -75,3 +75,7 @@ textarea {
 .summary {
     background-color: lightblue;
 }
+
+.heading {
+    font-weight: bold;
+}

@@ -189,7 +189,6 @@ func main() {
 	log.Fatal(http.ListenAndServe(":"+dflt.EnvString("HTTP_PORT", "8080"), nil))
 }
 
-
 func initEmbeddingClient() *genai.EmbeddingModel {
 	client.ModelName = "text-embedding-004"
 	emCl = client.New()
@@ -705,6 +704,8 @@ func generateMemories(logEntr []string, w http.ResponseWriter, r *http.Request) 
 		<a href="/ref?log=log-2024-08-04T02:25:10.513Z" class="popup">log-2024-08-04T02:25:10.513Z</a>
 		comma seperated,
 		preceeded by "ref:[" and closed with "]". 
+
+		Limit your output to 60 words.
 		`)},
 	}
 	logEntries := getLogEntries(logEntr, r.FormValue("userID"))
@@ -753,6 +754,30 @@ func getBody(fn string, userID string) string {
 }
 
 func personalLogDetails(w http.ResponseWriter, r *http.Request) {
-	io.WriteString(w, "TODO:")
-	io.WriteString(w, r.FormValue("log"))
+	type logDet struct {
+		UserID     string
+		Basename   string
+		Date       string
+		Summary    string
+		Transcript string
+		Audio      []byte
+	}
+	dt, err := time.Parse("log-2006-01-02T15:04:05.000Z", r.FormValue("log"))
+	if err != nil {
+		log.Printf("could not parse time from log basename: %v", err)
+		return
+	}
+	det := logDet{
+		UserID: r.FormValue("userID"), Basename: r.FormValue("log"),
+		Date: dt.Format("Monday, 1 Jan 2006, 15:04:05 UTC"),
+		Summary: getBody(r.FormValue("log")+".summary.txt",r.FormValue("userID")),
+		Transcript: getBody(r.FormValue("log")+".txt",r.FormValue("userID")),
+		Audio: []byte(getBody(r.FormValue("log")+".ogg",r.FormValue("userID"))),
+	}
+	b, err := json.Marshal(det)
+	if err != nil {
+		log.Println(err)
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(b)
 }

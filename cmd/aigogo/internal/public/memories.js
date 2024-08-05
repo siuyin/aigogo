@@ -10,6 +10,7 @@ userSubmit.addEventListener("click", memGen);
 
 const modelResponse = document.getElementById("modelResponse");
 
+const selectedLogEntry = document.getElementById("selectedLogEntry");
 
 // ------------------------------
 
@@ -37,6 +38,38 @@ async function memGen() {
     }
 }
 
+function updtPersonalLogRef() {
+    const refs = document.querySelectorAll("a.popup");
+    for (const r of refs) {
+        r.addEventListener("click", (ev) => {
+            ev.preventDefault();
+            fetchPersonalLogDetails(ev.target.innerText);
+            selectedLogEntry.innerHTML = ev.target.innerHTML;
+        });
+        console.log(r.innerHTML);
+    }
+    selectedLogEntry.innerHTML = "";
+}
+
+async function fetchPersonalLogDetails(logBasename) {
+    try {
+        const url = `/ref?log=${logBasename}&userID=${sessionUserID}`;
+        const res = await fetch(url);
+        if (res.status != 200) {
+            selectedLogEntry.innerHTML("could not fetch selected log entry");
+            return;
+        }
+        const logDet = await res.json();
+        selectedLogEntry.innerHTML = `<div>${logDet.Date}:
+        <p><span class="heading">summary:</span> ${logDet.Summary}</p >
+            <p><span class="heading">transcript:</span> ${logDet.Transcript}</p>
+        </div > `;
+        // <p><audio controls src="${URL.createObjectURL(new Blob(logDet.Audio, { type: "audio/ogg" }))}"></audio>
+    } catch (err) {
+
+    }
+}
+
 async function streamToElement(el, url) {
     const res = await fetch(url);
     let tmp = "";
@@ -47,15 +80,4 @@ async function streamToElement(el, url) {
         tmp += (dec.decode(chunk));
     }
     el.innerHTML = marked.parse(tmp);
-}
-
-function updtPersonalLogRef() {
-    const refs = document.querySelectorAll("a.popup");
-    for (const r of refs) {
-        r.addEventListener("click",(ev)=>{
-            ev.preventDefault();
-            alert(ev.target.innerHTML);
-        });
-        console.log(r.innerHTML);
-    }
 }
