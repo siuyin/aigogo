@@ -1,14 +1,56 @@
 const geoCoords = document.getElementById("geoCoords");
-if (!("geolocation" in navigator)) {
-    console.log("geo location API not available");
-}
+const currentTime = document.getElementById("currentTime");
 
-navigator.geolocation.getCurrentPosition((position) => {
+const personalLogBtn = document.getElementById("personalLog");
+personalLogBtn.addEventListener("click", () => {
+    window.location.replace("/personallog");
+});
+
+const activitiesBtn = document.getElementById("activities");
+const activitiesDiv = document.getElementById("activitiesScreen");
+
+activitiesBtn.addEventListener("click", showActivitiesScreen);
+
+const selectedSuggestion = document.getElementById("selected-suggestion");
+selectedSuggestion.addEventListener("change", (ev) => {
+    copySelectedSuggestionToUserPrompt(ev.target.value)
+});
+
+const selectedContext = document.getElementById("selected-context");
+selectedContext.addEventListener("change", (ev) => { debugSelectedContext(ev.target.value) })
+
+const userPrompt = document.getElementById("userPrompt");
+const userSubmit = document.getElementById("userSubmit");
+userSubmit.addEventListener("click", retrieveDocsForAugmentation);
+
+// embeddingResponse is the main RAG response
+const embeddingResponse = document.getElementById("embeddingResponse");
+// modelResponse is the LLM model response
+const modelResponse = document.getElementById("modelResponse");
+
+const meaningOfLifeLink = document.getElementById("meaningOfLife");
+meaningOfLifeLink.addEventListener("click", meaningOfLifeStrm);
+
+// -----------------------------
+
+import { marked } from "https://cdn.jsdelivr.net/npm/marked/lib/marked.esm.js";
+
+activitiesDiv.classList.add("hide");
+
+currentTime.innerText = `Good ${getDayPart(new Date)}`;
+
+if (!("geolocation" in navigator)) {
+    alert("geo location API not available");
+}
+navigator.geolocation.getCurrentPosition(updtNeighAndWeather);
+
+function updtNeighAndWeather(position) {
     geoCoords.innerText = `I see you are roughly located at coordinates: (${position.coords.latitude}, ${position.coords.longitude})`;
     updateNeighborhood(position.coords.latitude, position.coords.longitude);
     weatherForecast(position.coords.latitude, position.coords.longitude);
     sessionStorage.setItem("latlng", `${position.coords.latitude},${position.coords.longitude}`);
-});
+
+}
 
 async function updateNeighborhood(lat, lng) {
     const url = `/loc?latlng=${lat},${lng}`;
@@ -35,19 +77,6 @@ async function weatherForecast(lat, lng) {
     }
 }
 
-const currentTime = document.getElementById("currentTime");
-currentTime.innerText = `Good ${getDayPart(new Date)}`;
-
-const userPrompt = document.getElementById("userPrompt");
-const userSubmit = document.getElementById("userSubmit");
-userSubmit.addEventListener("click", retrieveDocsForAugmentation);
-
-// embeddingResponse is the main RAG response
-const embeddingResponse = document.getElementById("embeddingResponse");
-// modelResponse is the LLM model response to "meaning of life"
-const modelResponse = document.getElementById("modelResponse");
-
-import { marked } from "https://cdn.jsdelivr.net/npm/marked/lib/marked.esm.js";
 async function retrieveDocsForAugmentation() {
     const loc = encodeURIComponent(sessionStorage.getItem("neighborhood"));
     let usrQry = encodeURIComponent(userPrompt.value);
@@ -68,6 +97,7 @@ async function retrieveDocsForAugmentation() {
 function copyUserPromptToModelResponse() {
     modelResponse.innerHTML = userPrompt.value;
 }
+
 function getDayPart(currentTime) {
     // Get the hour (0-23)
     const hour = currentTime.getHours();
@@ -98,15 +128,13 @@ async function fetchAndDisplay(url) {
     embeddingResponse.innerHTML = marked.parse(respTxt);
 }
 
-function showStorage() {
+function debugLocation() {
     console.log(sessionStorage.getItem("latlng"));
     console.log(sessionStorage.getItem("neighborhood"));
 }
-showStorage();
+debugLocation();
 
-const meaningOfLifeLink = document.getElementById("meaningOfLife");
-meaningOfLifeLink.addEventListener("click", molStreamer);
-async function molStreamer() {
+async function meaningOfLifeStrm() {
     modelResponse.innerText = "";
     embeddingResponse.innerHTML = "";
     const url = `/life?loc=${encodeURIComponent(sessionStorage.getItem("neighborhood"))}&latlng=${sessionStorage.getItem("latlng")}`;
@@ -125,30 +153,12 @@ async function streamToElement(el, url) {
     el.innerHTML = marked.parse(tmp);
 }
 
-const selectedContext = document.getElementById("selected-context");
-selectedContext.addEventListener("change", (ev) => { recordSelectedContext(ev.target.value) })
-
-function recordSelectedContext(ctx) {
+function debugSelectedContext(ctx) {
     sessionStorage.setItem("context", ctx);
     console.log(`set context to ${ctx}`);
 }
-recordSelectedContext("General");
+debugSelectedContext("General");
 
-const personalLogBtn = document.getElementById("personalLog");
-const activitiesBtn = document.getElementById("activities");
-const activitiesDiv = document.getElementById("activitiesScreen");
-activitiesDiv.classList.add("hide");
-
-personalLogBtn.addEventListener("click", () => {
-    window.location.replace("/personallog");
-});
-
-activitiesBtn.addEventListener("click", showActivitiesScreen);
-
-const selectedSuggestion = document.getElementById("selected-suggestion");
-selectedSuggestion.addEventListener("change", (ev) => {
-    copySelectedSuggestionToUserPrompt(ev.target.value)
-});
 function copySelectedSuggestionToUserPrompt(prompt) {
     userPrompt.value = prompt;
     console.log(prompt);

@@ -752,16 +752,6 @@ func getBody(fn string, userID string) string {
 	return string(b)
 }
 
-func writeLogEntryMarkdown(logEntr []string, w http.ResponseWriter, r *http.Request) {
-	s := "\n\n"
-	for _, e := range logEntr {
-		s += fmt.Sprintf("%s:\n\n", logBasename(e))
-		s += fmt.Sprintln(getBody(e, r.FormValue("userID")))
-		s += fmt.Sprintln(`\n[transcript](/)  [audio](/)\n\n`)
-	}
-	io.WriteString(w, s)
-}
-
 func personalLogDetails(w http.ResponseWriter, r *http.Request) {
 	io.WriteString(w, "TODO:")
 	io.WriteString(w, r.FormValue("log"))
