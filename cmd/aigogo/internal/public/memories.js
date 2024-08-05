@@ -39,16 +39,15 @@ async function memGen() {
 }
 
 function updtPersonalLogRef() {
+    selectedLogEntry.innerHTML = "";
     const refs = document.querySelectorAll("a.popup");
     for (const r of refs) {
         r.addEventListener("click", (ev) => {
             ev.preventDefault();
             fetchPersonalLogDetails(ev.target.innerText);
-            selectedLogEntry.innerHTML = ev.target.innerHTML;
         });
         console.log(r.innerHTML);
     }
-    selectedLogEntry.innerHTML = "";
 }
 
 async function fetchPersonalLogDetails(logBasename) {
@@ -63,8 +62,8 @@ async function fetchPersonalLogDetails(logBasename) {
         selectedLogEntry.innerHTML = `<div>${logDet.Date}:
         <p><span class="heading">summary:</span> ${logDet.Summary}</p >
             <p><span class="heading">transcript:</span> ${logDet.Transcript}</p>
+        <p><audio controls src="data:audio/ogg;base64,${logDet.Audio}"></audio>
         </div > `;
-        // <p><audio controls src="${URL.createObjectURL(new Blob(logDet.Audio, { type: "audio/ogg" }))}"></audio>
     } catch (err) {
 
     }

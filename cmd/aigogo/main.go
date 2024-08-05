@@ -61,11 +61,11 @@ func init() {
 		return
 	}
 	cl = client.New()
-	temp := float32(0.0)
 	cl.Model.SafetySettings = []*genai.SafetySetting{
-		// {Category: genai.HarmCategoryDangerousContent, Threshold: genai.HarmBlockOnlyHigh},
+		{Category: genai.HarmCategoryDangerousContent, Threshold: genai.HarmBlockOnlyHigh},
 		// {Category: genai.HarmCategoryMedical,Threshold: genai.HarmBlockMediumAndAbove},
 	}
+	temp := float32(0.0)
 	cl.Model.GenerationConfig.Temperature = &temp
 	em = initEmbeddingClient()
 	collection = initDB()
@@ -170,20 +170,6 @@ func main() {
 		meaningOfLife(w, r.FormValue("loc"), time.Now().In(tzLoc(latlng)).Format("Monday, 03:04PM, 2 January 2006"))
 	}
 	http.HandleFunc("/life", life)
-
-	http.HandleFunc("/hello/", func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprintf(w, "Hello World! It is %v\n", time.Now().Format("15:04:05.000 MST"))
-	})
-
-	h1 := func(w http.ResponseWriter, _ *http.Request) {
-		io.WriteString(w, "Hello from a HandleFunc #1.\n")
-	}
-	http.HandleFunc("/h1", h1)
-
-	h2 := func(w http.ResponseWriter, _ *http.Request) {
-		io.WriteString(w, "Hello from a HandleFunc #2!\n")
-	}
-	http.HandleFunc("/endpoint", h2)
 
 	log.Println("starting web server")
 	log.Fatal(http.ListenAndServe(":"+dflt.EnvString("HTTP_PORT", "8080"), nil))
@@ -769,10 +755,10 @@ func personalLogDetails(w http.ResponseWriter, r *http.Request) {
 	}
 	det := logDet{
 		UserID: r.FormValue("userID"), Basename: r.FormValue("log"),
-		Date: dt.Format("Monday, 1 Jan 2006, 15:04:05 UTC"),
-		Summary: getBody(r.FormValue("log")+".summary.txt",r.FormValue("userID")),
-		Transcript: getBody(r.FormValue("log")+".txt",r.FormValue("userID")),
-		Audio: []byte(getBody(r.FormValue("log")+".ogg",r.FormValue("userID"))),
+		Date:       dt.Format("Monday, 1 Jan 2006, 15:04:05 UTC"),
+		Summary:    getBody(r.FormValue("log")+".summary.txt", r.FormValue("userID")),
+		Transcript: getBody(r.FormValue("log")+".txt", r.FormValue("userID")),
+		Audio:      []byte(getBody(r.FormValue("log")+".ogg", r.FormValue("userID"))),
 	}
 	b, err := json.Marshal(det)
 	if err != nil {
