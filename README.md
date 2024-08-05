@@ -1,4 +1,5 @@
-# AiGoGo - Your fun AI friend that gets you on the Go, Go!
+# AiGoGo 
+AiGoGo is your intelligent companion that safeguards cherished memories, suggests activities tailored to your unique preferences, and incorporates local knowledge for a truly personalized experience.
 
 ## Overview
 - Create embeddings file
