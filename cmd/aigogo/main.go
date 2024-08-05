@@ -56,7 +56,27 @@ type tmplDat struct {
 	JS   string
 }
 
+func init() {
+	if os.Getenv("API_KEY") == "" || os.Getenv("MAPS_API_KEY") == "" { // we are in testing mode
+		return
+	}
+	cl = client.New()
+	temp := float32(0.0)
+	cl.Model.SafetySettings = []*genai.SafetySetting{
+		// {Category: genai.HarmCategoryDangerousContent, Threshold: genai.HarmBlockOnlyHigh},
+		// {Category: genai.HarmCategoryMedical,Threshold: genai.HarmBlockMediumAndAbove},
+	}
+	cl.Model.GenerationConfig.Temperature = &temp
+	em = initEmbeddingClient()
+	collection = initDB()
+	mapsClient = initMapsClient()
+	initAigogoDataPath()
+
+	log.Println("application initialised")
+}
+
 func main() {
+	defer cl.Close()
 
 	depl := dflt.EnvString("DEPLOY", "DEV")
 	if depl == "DEV" {
@@ -149,7 +169,6 @@ func main() {
 		latlng := r.FormValue("latlng")
 		meaningOfLife(w, r.FormValue("loc"), time.Now().In(tzLoc(latlng)).Format("Monday, 03:04PM, 2 January 2006"))
 	}
-	defer cl.Close()
 	http.HandleFunc("/life", life)
 
 	http.HandleFunc("/hello/", func(w http.ResponseWriter, r *http.Request) {
@@ -170,24 +189,6 @@ func main() {
 	log.Fatal(http.ListenAndServe(":"+dflt.EnvString("HTTP_PORT", "8080"), nil))
 }
 
-func init() {
-	if os.Getenv("API_KEY") == "" || os.Getenv("MAPS_API_KEY") == "" { // we are in testing mode
-		return
-	}
-	cl = client.New()
-	temp := float32(0.0)
-	cl.Model.SafetySettings = []*genai.SafetySetting{
-		// {Category: genai.HarmCategoryDangerousContent, Threshold: genai.HarmBlockOnlyHigh},
-		// {Category: genai.HarmCategoryMedical,Threshold: genai.HarmBlockMediumAndAbove},
-	}
-	cl.Model.GenerationConfig.Temperature = &temp
-	em = initEmbeddingClient()
-	collection = initDB()
-	mapsClient = initMapsClient()
-	initAigogoDataPath()
-
-	log.Println("application initialised")
-}
 
 func initEmbeddingClient() *genai.EmbeddingModel {
 	client.ModelName = "text-embedding-004"
@@ -210,6 +211,7 @@ func initDB() *chromem.Collection {
 	return c
 
 }
+
 func initMapsClient() *maps.Client {
 	cl, err := maps.NewClient(maps.WithAPIKey(os.Getenv("MAPS_API_KEY")))
 	if err != nil {
@@ -224,10 +226,14 @@ func initAigogoDataPath() {
 		return
 	}
 }
+
+// ------------------------------------------------
+
 func augmentGenerationWithDoc(w http.ResponseWriter, r *http.Request, doc []string) {
 	defineSystemInstructionWithDocs(doc, r)
 	streamResponseFromUserPrompt(r.FormValue("userPrompt"), w)
 }
+
 func streamResponseFromUserPrompt(userPrompt string, w http.ResponseWriter) {
 	log.Println("calling generate content stream with: ", userPrompt)
 	iter := cl.Model.GenerateContentStream(context.Background(),
@@ -334,6 +340,7 @@ func decodeLocationAPIResp(res *http.Response, mapRes *mapResponse) *mapResponse
 	}
 	return mapRes
 }
+
 func loadDocuments() []chromem.Document {
 	var (
 		f    io.ReadCloser
@@ -404,6 +411,7 @@ func meaningOfLife(w http.ResponseWriter, location string, currentTime string) {
 		fPrintResponse(w, resp)
 	}
 }
+
 func fPrintResponse(w http.ResponseWriter, resp *genai.GenerateContentResponse) {
 	f, _ := w.(http.Flusher)
 	for _, cand := range resp.Candidates {
@@ -577,6 +585,7 @@ func summarize(dat []byte, w http.ResponseWriter) []byte {
 
 	return b.Bytes()
 }
+
 func saveEditedLog(w http.ResponseWriter, r *http.Request) []byte {
 	metadata := fmt.Sprintf("\n---\nlatlng:%s, neighborhood:%s, primaryHighlight:%s, secondaryHighlight:%s, people:%s",
 		r.FormValue("latlng"), r.FormValue("neighborhood"), r.FormValue("primary"), r.FormValue("secondary"),
