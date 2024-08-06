@@ -92,9 +92,7 @@ func main() {
 
 	http.HandleFunc("/memgen", func(w http.ResponseWriter, r *http.Request) { memGenFunc(w, r) })
 
-	http.HandleFunc("/ref", func(w http.ResponseWriter, r *http.Request) {
-		personalLogDetails(w, r)
-	})
+	http.HandleFunc("/ref", func(w http.ResponseWriter, r *http.Request) { personalLogDetails(w, r) })
 
 	retrievalFunc := func(w http.ResponseWriter, r *http.Request) {
 		qry := r.FormValue("userPrompt")
@@ -761,6 +759,16 @@ func getBody(fn string, userID string) string {
 }
 
 func personalLogDetails(w http.ResponseWriter, r *http.Request) {
+	if r.FormValue("log") == "" || r.FormValue("userID") == "" {
+		io.WriteString(w, "log and userID required")
+		return
+	}
+
+	if os.Getenv("TESTING") != "" {
+		io.WriteString(w,"populating log details")
+		return
+	}
+
 	type logDet struct {
 		UserID     string
 		Basename   string

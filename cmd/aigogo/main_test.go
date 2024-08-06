@@ -67,6 +67,9 @@ func TestPages(t *testing.T) {
 	t.Run("MemoryGen", func(t *testing.T) {
 		testPage(t, memGenFunc, "/memories?userID=123456", "calling GenerateContentStream")
 	})
+	t.Run("LogDetails", func(t *testing.T) {
+		testPage(t, personalLogDetails, "/ref?userID=123456&log=log-somedate", "populating log details")
+	})
 
 }
 
