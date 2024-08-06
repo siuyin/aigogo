@@ -14,10 +14,12 @@ import (
 )
 
 func TestTimezone(t *testing.T) {
-	if os.Getenv("MAPS_API_KEY") != "" {
-		id, name := localTimezoneName(&maps.LatLng{Lat: 1.3545457, Lng: 103.7636865})
-		fmt.Println(id, name)
+	if os.Getenv("TESTING") != "" {
+		t.Skip()
+		return
 	}
+	id, name := localTimezoneName(&maps.LatLng{Lat: 1.3545457, Lng: 103.7636865})
+	fmt.Println(id, name)
 }
 
 func TestPersonalLogEntries(t *testing.T) {
@@ -50,22 +52,25 @@ func TestGetLogEntries(t *testing.T) {
 	}
 }
 
-func TestStaticPages(t *testing.T) {
+func TestPages(t *testing.T) {
 	tmpl = template.Must(template.ParseGlob("./internal/public/*.html"))
 
 	t.Run("PersonalLog", func(t *testing.T) {
-		testStaticPage(t, personalLogFunc, "/personallog", "<h1>Personal Log")
+		testPage(t, personalLogFunc, "/personallog", "<h1>Personal Log")
 	})
 	t.Run("Memories", func(t *testing.T) {
-		testStaticPage(t, memoriesFunc, "/memories", "<h1>Memories")
+		testPage(t, memoriesFunc, "/memories", "<h1>Memories")
 	})
 	t.Run("Index", func(t *testing.T) {
-		testStaticPage(t, indexFunc, "/", "<h1>AiGoGo")
+		testPage(t, indexFunc, "/", "<h1>AiGoGo")
+	})
+	t.Run("MemoryGen", func(t *testing.T) {
+		testPage(t, memGenFunc, "/memories?userID=123456", "calling GenerateContentStream")
 	})
 
 }
 
-func testStaticPage(t *testing.T, fn func(w http.ResponseWriter, r *http.Request), path string, fragment string) {
+func testPage(t *testing.T, fn func(w http.ResponseWriter, r *http.Request), path string, fragment string) {
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { fn(w, r) }))
 	defer ts.Close()
 
@@ -81,7 +86,7 @@ func testStaticPage(t *testing.T, fn func(w http.ResponseWriter, r *http.Request
 		t.Errorf("body should not be empty:\n%s", body)
 	}
 	if !bytes.Contains(body, []byte(fragment)) {
-		t.Errorf("expected fragment %s not found in body", fragment)
+		t.Errorf("expected fragment: %s not found in body: %s", fragment, body)
 	}
 
 }

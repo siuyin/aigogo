@@ -29,6 +29,15 @@ cd cmd/aigogo
 go run main.go
 ```
 
+## Testing
+Set the TESTING environement variable to skip calling Gen AI services.
+
+Note: `func init()` is still called and the application initialized.
+```
+cd cmd/aigogo
+TESTING=1 go test
+```
+
 ## Production build, deploy and run
 ```
 export DEPLOY=PROD

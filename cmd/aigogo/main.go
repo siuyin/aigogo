@@ -57,9 +57,6 @@ type tmplDat struct {
 }
 
 func init() {
-	if os.Getenv("API_KEY") == "" || os.Getenv("MAPS_API_KEY") == "" { // we are in testing mode
-		return
-	}
 	cl = client.New()
 	cl.Model.SafetySettings = []*genai.SafetySetting{
 		{Category: genai.HarmCategoryDangerousContent, Threshold: genai.HarmBlockOnlyHigh},
@@ -87,23 +84,13 @@ func main() {
 		http.Handle("/", http.FileServer(http.FS(public.Content))) // PROD
 	}
 
-	// indexFunc := func(w http.ResponseWriter, r *http.Request) {
-	// 	if err := tmpl.ExecuteTemplate(w, "main.html", tmplDat{Body: "main", JS: "/main.js"}); err != nil {
-	// 		io.WriteString(w, err.Error())
-	// 	}
-	// }
-	// http.HandleFunc("/{$}", indexFunc)
 	http.HandleFunc("/{$}", func(w http.ResponseWriter, r *http.Request) { indexFunc(w, r) })
 
 	http.HandleFunc("/personallog", func(w http.ResponseWriter, r *http.Request) { personalLogFunc(w, r) })
 
 	http.HandleFunc("/memories", func(w http.ResponseWriter, r *http.Request) { memoriesFunc(w, r) })
 
-	memGenFunc := func(w http.ResponseWriter, r *http.Request) {
-		logEntr := randSelection(personalLogEntries(r.FormValue("userID")), 5)
-		generateMemories(logEntr, w, r)
-	}
-	http.HandleFunc("/memgen", memGenFunc)
+	http.HandleFunc("/memgen", func(w http.ResponseWriter, r *http.Request) { memGenFunc(w, r) })
 
 	http.HandleFunc("/ref", func(w http.ResponseWriter, r *http.Request) {
 		personalLogDetails(w, r)
@@ -230,6 +217,11 @@ func memoriesFunc(w http.ResponseWriter, _ *http.Request) {
 	if err := tmpl.ExecuteTemplate(w, "main.html", tmplDat{Body: "memories", JS: "/memories.js"}); err != nil {
 		io.WriteString(w, err.Error())
 	}
+}
+
+func memGenFunc(w http.ResponseWriter, r *http.Request) {
+	logEntr := randSelection(personalLogEntries(r.FormValue("userID")), 5)
+	generateMemories(logEntr, w, r)
 }
 
 func augmentGenerationWithDoc(w http.ResponseWriter, r *http.Request, doc []string) {
@@ -686,6 +678,11 @@ func randSelection(list []string, n int) []string {
 }
 
 func generateMemories(logEntr []string, w http.ResponseWriter, r *http.Request) {
+	if r.FormValue("userID") == "" {
+		io.WriteString(w, "Error: empty userID received")
+		return
+	}
+
 	cl.Model.SystemInstruction = &genai.Content{
 		Parts: []genai.Part{genai.Text(`You are a young personal
 		assitant to an older person. You have a bubbly and cheerful personality. 
@@ -712,8 +709,14 @@ func generateMemories(logEntr []string, w http.ResponseWriter, r *http.Request) 
 		Limit your output to 60 words.
 		`)},
 	}
+
 	logEntries := getLogEntries(logEntr, r.FormValue("userID"))
 	userPrompt := r.FormValue("userPrompt") + "\n" + logEntries
+	if os.Getenv("TESTING") != "" {
+		io.WriteString(w, "calling GenerateContentStream")
+		return
+	}
+
 	iter := cl.Model.GenerateContentStream(context.Background(),
 		genai.Text(userPrompt))
 	for {
