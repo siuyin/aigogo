@@ -96,6 +96,8 @@ function allowRecording(s) {
 }
 
 async function saveEditedLogText() {
+    if (logText.value == "") { return }
+    
     const ds = sessionStorage.getItem("logDate");
     const latlng = sessionStorage.getItem("latlng");
     const neighborhood = sessionStorage.getItem("neighborhood");
