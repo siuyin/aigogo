@@ -84,24 +84,23 @@ func main() {
 		http.Handle("/", http.FileServer(http.FS(public.Content))) // PROD
 	}
 
-	http.HandleFunc("/{$}", func(w http.ResponseWriter, r *http.Request) { indexFunc(w, r) })
+	http.HandleFunc("/{$}", indexFunc)
 
-	http.HandleFunc("/personallog", func(w http.ResponseWriter, r *http.Request) { personalLogFunc(w, r) })
+	http.HandleFunc("/personallog", personalLogFunc)
 
-	http.HandleFunc("/memories", func(w http.ResponseWriter, r *http.Request) { memoriesFunc(w, r) })
+	http.HandleFunc("/memories", memoriesFunc)
 
-	http.HandleFunc("/memgen", func(w http.ResponseWriter, r *http.Request) { memGenFunc(w, r) })
+	http.HandleFunc("/memgen", memGenFunc)
 
-	http.HandleFunc("/ref", func(w http.ResponseWriter, r *http.Request) { personalLogDetails(w, r) })
+	http.HandleFunc("/ref", personalLogDetails)
 
-	http.HandleFunc("/retr", func(w http.ResponseWriter, r *http.Request) { retrievalFunc(w, r) })
+	http.HandleFunc("/retr", retrievalFunc)
 
-	http.HandleFunc("/loc", func(w http.ResponseWriter, r *http.Request) { locationFunc(w, r) })
+	http.HandleFunc("/loc", locationFunc)
 
-	http.HandleFunc("/data", func(w http.ResponseWriter, r *http.Request) { dataWrite(w, r) })
+	http.HandleFunc("/data", dataWrite)
 
-	// http.HandleFunc("/getHighlightSelections", loadSelFunc)
-	http.HandleFunc("/getHighlightSelections", func(w http.ResponseWriter, r *http.Request) { loadSelFunc(w, r) })
+	http.HandleFunc("/getHighlightSelections", loadSelFunc)
 
 	userIDExistFunc := func(w http.ResponseWriter, r *http.Request) {
 		if r.FormValue("userID") != "123456" {
@@ -685,7 +684,7 @@ func processTestRequest(w http.ResponseWriter, r *http.Request) {
 }
 
 func loadCustomHighlights(userID string) []string {
-	f, err := os.Open(dataPath + "/"+userID+"/highlights.txt")
+	f, err := os.Open(dataPath + "/" + userID + "/highlights.txt")
 	if err != nil {
 		log.Fatal(err)
 	}

@@ -105,5 +105,16 @@ func testPage(t *testing.T, fn func(w http.ResponseWriter, r *http.Request), pat
 	if !bytes.Contains(body, []byte(fragment)) {
 		t.Errorf("expected fragment: %s not found in body: %s", fragment, body)
 	}
+}
 
+func TestLoc(t *testing.T) {
+	r := httptest.NewRequest("", "/loc?latlng=1.23,4.56", nil)
+	w := httptest.NewRecorder()
+	locationFunc(w, r)
+
+	res := w.Result()
+	body, _ := io.ReadAll(res.Body)
+	if !bytes.Contains(body, []byte("123 A Street, B City")) {
+		t.Errorf("body: %s", body)
+	}
 }
