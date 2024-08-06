@@ -94,17 +94,7 @@ func main() {
 
 	http.HandleFunc("/ref", func(w http.ResponseWriter, r *http.Request) { personalLogDetails(w, r) })
 
-	retrievalFunc := func(w http.ResponseWriter, r *http.Request) {
-		qry := r.FormValue("userPrompt")
-		doc := retrieveDocsForAugmentation(r, qry)
-		if len(doc) == 0 {
-			io.WriteString(w, "No relevant documents found")
-			return
-		}
-		//writeRetrievedDocs(w, doc)
-		augmentGenerationWithDoc(w, r, doc)
-	}
-	http.HandleFunc("/retr", retrievalFunc)
+	http.HandleFunc("/retr", func(w http.ResponseWriter, r *http.Request) { retrievalFunc(w, r) })
 
 	locationFunc := func(w http.ResponseWriter, r *http.Request) {
 		res := getLocationAPIResp(r)
@@ -220,6 +210,21 @@ func memoriesFunc(w http.ResponseWriter, _ *http.Request) {
 func memGenFunc(w http.ResponseWriter, r *http.Request) {
 	logEntr := randSelection(personalLogEntries(r.FormValue("userID")), 5)
 	generateMemories(logEntr, w, r)
+}
+
+func retrievalFunc(w http.ResponseWriter, r *http.Request) {
+	qry := r.FormValue("userPrompt")
+	doc := retrieveDocsForAugmentation(r, qry)
+	if len(doc) == 0 {
+		io.WriteString(w, "No relevant documents found")
+		return
+	}
+	//writeRetrievedDocs(w, doc)
+	if os.Getenv("TESTING") != "" {
+		fmt.Fprintf(w, "calling augmentGenerationWithDoc: %v", doc)
+		return
+	}
+	augmentGenerationWithDoc(w, r, doc)
 }
 
 func augmentGenerationWithDoc(w http.ResponseWriter, r *http.Request, doc []string) {
@@ -418,6 +423,9 @@ func fPrintResponse(w http.ResponseWriter, resp *genai.GenerateContentResponse) 
 }
 
 func retrieveDocsForAugmentation(r *http.Request, qry string) []string {
+	if os.Getenv("TESTING") != "" {
+		return []string{"testDoc1", "testDoc2"}
+	}
 	ctx := context.Background()
 	res, err := em.EmbedContent(ctx, genai.Text(qry))
 	if err != nil {
@@ -765,7 +773,7 @@ func personalLogDetails(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if os.Getenv("TESTING") != "" {
-		io.WriteString(w,"populating log details")
+		io.WriteString(w, "populating log details")
 		return
 	}
 

@@ -70,7 +70,9 @@ func TestPages(t *testing.T) {
 	t.Run("LogDetails", func(t *testing.T) {
 		testPage(t, personalLogDetails, "/ref?userID=123456&log=log-somedate", "populating log details")
 	})
-
+	t.Run("RetrieveAugmentDoc", func(t *testing.T) {
+		testPage(t, retrievalFunc, "/retr?userPrompt=someprompt", "calling augmentGenerationWithDoc: [testDoc1 testDoc2]")
+	})
 }
 
 func testPage(t *testing.T, fn func(w http.ResponseWriter, r *http.Request), path string, fragment string) {
