@@ -100,15 +100,8 @@ func main() {
 
 	http.HandleFunc("/data", func(w http.ResponseWriter, r *http.Request) { dataWrite(w, r) })
 
-	loadSelFunc := func(w http.ResponseWriter, r *http.Request) {
-		s := loadCustomHighlights()
-		b, err := json.Marshal(s)
-		if err != nil {
-			fmt.Fprintf(w, "could not retrieve highlights.txt file: %v", err)
-		}
-		w.Write(b)
-	}
-	http.HandleFunc("/getHighlightSelections", loadSelFunc)
+	// http.HandleFunc("/getHighlightSelections", loadSelFunc)
+	http.HandleFunc("/getHighlightSelections", func(w http.ResponseWriter, r *http.Request) { loadSelFunc(w, r) })
 
 	userIDExistFunc := func(w http.ResponseWriter, r *http.Request) {
 		if r.FormValue("userID") != "123456" {
@@ -229,8 +222,8 @@ func augmentGenerationWithDoc(w http.ResponseWriter, r *http.Request, doc []stri
 }
 
 func dataWrite(w http.ResponseWriter, r *http.Request) {
-	if r.FormValue("userID")=="" ||  (r.FormValue("filename") =="" && r.FormValue("editedlog") == "") {
-		io.WriteString(w,"userID and (filename or editedlog required)")
+	if r.FormValue("userID") == "" || (r.FormValue("filename") == "" && r.FormValue("editedlog") == "") {
+		io.WriteString(w, "userID and (filename or editedlog required)")
 		return
 	}
 
@@ -246,6 +239,25 @@ func dataWrite(w http.ResponseWriter, r *http.Request) {
 	if editedlog != "" {
 		saveEditedLogAndSummary(w, r)
 	}
+}
+
+func loadSelFunc(w http.ResponseWriter, r *http.Request) {
+	if r.FormValue("userID") == "" {
+		io.WriteString(w, "userID required")
+		return
+	}
+
+	s := loadCustomHighlights(r.FormValue("userID"))
+	if os.Getenv("TESTING") != "" {
+		fmt.Fprintf(w, "custom highlights loaded: %v", s)
+		return
+	}
+
+	b, err := json.Marshal(s)
+	if err != nil {
+		fmt.Fprintf(w, "could not retrieve highlights.txt file: %v", err)
+	}
+	w.Write(b)
 }
 
 func streamResponseFromUserPrompt(userPrompt string, w http.ResponseWriter) {
@@ -506,8 +518,8 @@ type sampleData struct {
 }
 
 func saveAudioLog(w http.ResponseWriter, r *http.Request) {
-	if os.Getenv("TESTING")!=""{
-		io.WriteString(w,"calling saveAudioFile and transcribeAudio")
+	if os.Getenv("TESTING") != "" {
+		io.WriteString(w, "calling saveAudioFile and transcribeAudio")
 		return
 	}
 	aud := saveAudioFile(w, r)
@@ -580,8 +592,8 @@ func createFile(lf logFile) {
 }
 
 func saveEditedLogAndSummary(w http.ResponseWriter, r *http.Request) {
-	if os.Getenv("TESTING")!="" {
-		io.WriteString(w,"calling saveEditedLog and saving summary")
+	if os.Getenv("TESTING") != "" {
+		io.WriteString(w, "calling saveEditedLog and saving summary")
 		return
 	}
 	editedLog := saveEditedLog(w, r)
@@ -672,8 +684,8 @@ func processTestRequest(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "data write request received: %#v", sd)
 }
 
-func loadCustomHighlights() []string {
-	f, err := os.Open(dataPath + "/123456/highlights.txt")
+func loadCustomHighlights(userID string) []string {
+	f, err := os.Open(dataPath + "/"+userID+"/highlights.txt")
 	if err != nil {
 		log.Fatal(err)
 	}

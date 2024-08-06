@@ -82,6 +82,9 @@ func TestPages(t *testing.T) {
 	t.Run("dataSaveEditedAndSummary", func(t *testing.T) {
 		testPage(t, dataWrite, "/data?editedlog=somefile&userID=123456", "calling saveEditedLog and saving summary")
 	})
+	t.Run("GetHighlighSelections", func(t *testing.T) {
+		testPage(t, loadSelFunc, "/getHighlightSelections?userID=123456", "custom highlights loaded:")
+	})
 }
 
 func testPage(t *testing.T, fn func(w http.ResponseWriter, r *http.Request), path string, fragment string) {
