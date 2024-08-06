@@ -23,6 +23,8 @@ go run main.go
 
 ## Developement run
 ```
+mkdir -p /data/aigogo/123456
+cp data/aigogo/123456/* /data/aigogo/123456
 cd cmd/aigogo
 go run main.go
 ```
@@ -35,3 +37,6 @@ export MAPS_API_KEY=....
 
 skaffold build   # this creates an image ready to deploy
 ```
+
+Create a Cloud Storage bucket and have it mounted on /data
+copy data/aigogo/123456 to /data/aigogo/123456

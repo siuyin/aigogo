@@ -1,0 +1,20 @@
+Place
+ restaurant
+ hotel
+ home
+ forest
+ farm
+ campground
+Occasion:happy
+ holiday
+ birthday
+ wedding
+ festival
+ new job
+Occasion:sad
+ funeral
+ sickness
+ lost family
+ lost funds
+ lost job
+ accident
