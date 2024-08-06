@@ -102,13 +102,6 @@ func main() {
 
 	http.HandleFunc("/getHighlightSelections", loadSelFunc)
 
-	userIDExistFunc := func(w http.ResponseWriter, r *http.Request) {
-		if r.FormValue("userID") != "123456" {
-			io.WriteString(w, "")
-			return
-		}
-		io.WriteString(w, "Kit Siew")
-	}
 	http.HandleFunc("/userIDExist", userIDExistFunc)
 
 	life := func(w http.ResponseWriter, r *http.Request) {
@@ -257,6 +250,14 @@ func loadSelFunc(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, "could not retrieve highlights.txt file: %v", err)
 	}
 	w.Write(b)
+}
+
+func userIDExistFunc(w http.ResponseWriter, r *http.Request) {
+	if r.FormValue("userID") != "123456" {
+		io.WriteString(w, "")
+		return
+	}
+	io.WriteString(w, "Kit Siew")
 }
 
 func streamResponseFromUserPrompt(userPrompt string, w http.ResponseWriter) {

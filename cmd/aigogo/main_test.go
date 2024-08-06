@@ -107,14 +107,21 @@ func testPage(t *testing.T, fn func(w http.ResponseWriter, r *http.Request), pat
 	}
 }
 
-func TestLoc(t *testing.T) {
-	r := httptest.NewRequest("", "/loc?latlng=1.23,4.56", nil)
+func TestHandlers(t *testing.T) {
+	tmpl = template.Must(template.ParseGlob("./internal/public/*.html"))
+	t.Run("UserIDExist",func(t*testing.T){
+		testHandler(t,userIDExistFunc,"GET","/userIDExist?userID=123456",nil,"Kit Siew")
+	})
+}
+
+func testHandler(t *testing.T, fn http.HandlerFunc, method string, path string, body io.Reader, fragment string) {
+	r := httptest.NewRequest(method, path, body)
 	w := httptest.NewRecorder()
-	locationFunc(w, r)
+	fn(w, r)
 
 	res := w.Result()
-	body, _ := io.ReadAll(res.Body)
-	if !bytes.Contains(body, []byte("123 A Street, B City")) {
-		t.Errorf("body: %s", body)
+	bd, _ := io.ReadAll(res.Body)
+	if !bytes.Contains(bd, []byte(fragment)) {
+		t.Errorf("expected fragment: %s: got:%s", fragment, bd)
 	}
 }
