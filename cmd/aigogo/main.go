@@ -87,26 +87,17 @@ func main() {
 		http.Handle("/", http.FileServer(http.FS(public.Content))) // PROD
 	}
 
-	indexFunc := func(w http.ResponseWriter, r *http.Request) {
-		if err := tmpl.ExecuteTemplate(w, "main.html", tmplDat{Body: "main", JS: "/main.js"}); err != nil {
-			io.WriteString(w, err.Error())
-		}
-	}
-	http.HandleFunc("/{$}", indexFunc)
+	// indexFunc := func(w http.ResponseWriter, r *http.Request) {
+	// 	if err := tmpl.ExecuteTemplate(w, "main.html", tmplDat{Body: "main", JS: "/main.js"}); err != nil {
+	// 		io.WriteString(w, err.Error())
+	// 	}
+	// }
+	// http.HandleFunc("/{$}", indexFunc)
+	http.HandleFunc("/{$}", func(w http.ResponseWriter, r *http.Request) { indexFunc(w, r) })
 
-	personalLogFunc := func(w http.ResponseWriter, r *http.Request) {
-		if err := tmpl.ExecuteTemplate(w, "main.html", tmplDat{Body: "personallog", JS: "/personallog.js"}); err != nil {
-			io.WriteString(w, err.Error())
-		}
-	}
-	http.HandleFunc("/personallog", personalLogFunc)
+	http.HandleFunc("/personallog", func(w http.ResponseWriter, r *http.Request) { personalLogFunc(w, r) })
 
-	memoriesFunc := func(w http.ResponseWriter, r *http.Request) {
-		if err := tmpl.ExecuteTemplate(w, "main.html", tmplDat{Body: "memories", JS: "/memories.js"}); err != nil {
-			io.WriteString(w, err.Error())
-		}
-	}
-	http.HandleFunc("/memories", memoriesFunc)
+	http.HandleFunc("/memories", func(w http.ResponseWriter, r *http.Request) { memoriesFunc(w, r) })
 
 	memGenFunc := func(w http.ResponseWriter, r *http.Request) {
 		logEntr := randSelection(personalLogEntries(r.FormValue("userID")), 5)
@@ -222,6 +213,24 @@ func initAigogoDataPath() {
 }
 
 // ------------------------------------------------
+
+func indexFunc(w http.ResponseWriter, _ *http.Request) {
+	if err := tmpl.ExecuteTemplate(w, "main.html", tmplDat{Body: "main", JS: "/main.js"}); err != nil {
+		io.WriteString(w, err.Error())
+	}
+}
+
+func personalLogFunc(w http.ResponseWriter, _ *http.Request) {
+	if err := tmpl.ExecuteTemplate(w, "main.html", tmplDat{Body: "personallog", JS: "/personallog.js"}); err != nil {
+		io.WriteString(w, err.Error())
+	}
+}
+
+func memoriesFunc(w http.ResponseWriter, _ *http.Request) {
+	if err := tmpl.ExecuteTemplate(w, "main.html", tmplDat{Body: "memories", JS: "/memories.js"}); err != nil {
+		io.WriteString(w, err.Error())
+	}
+}
 
 func augmentGenerationWithDoc(w http.ResponseWriter, r *http.Request, doc []string) {
 	defineSystemInstructionWithDocs(doc, r)
