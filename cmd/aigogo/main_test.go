@@ -73,6 +73,15 @@ func TestPages(t *testing.T) {
 	t.Run("RetrieveAugmentDoc", func(t *testing.T) {
 		testPage(t, retrievalFunc, "/retr?userPrompt=someprompt", "calling augmentGenerationWithDoc: [testDoc1 testDoc2]")
 	})
+	t.Run("Location", func(t *testing.T) {
+		testPage(t, locationFunc, "/loc?latlng=1.23,4.56", "123 A Street, B City")
+	})
+	t.Run("dataSaveAudio", func(t *testing.T) {
+		testPage(t, dataWrite, "/data?filename=somefile&userID=123456", "calling saveAudioFile and transcribeAudio")
+	})
+	t.Run("dataSaveEditedAndSummary", func(t *testing.T) {
+		testPage(t, dataWrite, "/data?editedlog=somefile&userID=123456", "calling saveEditedLog and saving summary")
+	})
 }
 
 func testPage(t *testing.T, fn func(w http.ResponseWriter, r *http.Request), path string, fragment string) {

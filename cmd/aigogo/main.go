@@ -96,30 +96,9 @@ func main() {
 
 	http.HandleFunc("/retr", func(w http.ResponseWriter, r *http.Request) { retrievalFunc(w, r) })
 
-	locationFunc := func(w http.ResponseWriter, r *http.Request) {
-		res := getLocationAPIResp(r)
+	http.HandleFunc("/loc", func(w http.ResponseWriter, r *http.Request) { locationFunc(w, r) })
 
-		var mapRes *mapResponse
-		mapRes = decodeLocationAPIResp(res, mapRes)
-		fmt.Fprintf(w, "%s", mapRes.Results[0].FormattedAddress)
-	}
-	http.HandleFunc("/loc", locationFunc)
-
-	dataWrite := func(w http.ResponseWriter, r *http.Request) {
-		ter := r.FormValue("ter")
-		if ter != "" {
-			processTestRequest(w, r)
-		}
-		filename := r.FormValue("filename")
-		if filename != "" {
-			saveAudioLog(w, r)
-		}
-		editedlog := r.FormValue("editedlog")
-		if editedlog != "" {
-			saveEditedLogAndSummary(w, r)
-		}
-	}
-	http.HandleFunc("/data", dataWrite)
+	http.HandleFunc("/data", func(w http.ResponseWriter, r *http.Request) { dataWrite(w, r) })
 
 	loadSelFunc := func(w http.ResponseWriter, r *http.Request) {
 		s := loadCustomHighlights()
@@ -227,9 +206,46 @@ func retrievalFunc(w http.ResponseWriter, r *http.Request) {
 	augmentGenerationWithDoc(w, r, doc)
 }
 
+func locationFunc(w http.ResponseWriter, r *http.Request) {
+	if r.FormValue("latlng") == "" {
+		io.WriteString(w, "latlng required")
+		return
+	}
+	if os.Getenv("TESTING") != "" {
+		io.WriteString(w, "123 A Street, B City")
+		return
+	}
+
+	res := getLocationAPIResp(r)
+
+	var mapRes *mapResponse
+	mapRes = decodeLocationAPIResp(res, mapRes)
+	fmt.Fprintf(w, "%s", mapRes.Results[0].FormattedAddress)
+}
+
 func augmentGenerationWithDoc(w http.ResponseWriter, r *http.Request, doc []string) {
 	defineSystemInstructionWithDocs(doc, r)
 	streamResponseFromUserPrompt(r.FormValue("userPrompt"), w)
+}
+
+func dataWrite(w http.ResponseWriter, r *http.Request) {
+	if r.FormValue("userID")=="" ||  (r.FormValue("filename") =="" && r.FormValue("editedlog") == "") {
+		io.WriteString(w,"userID and (filename or editedlog required)")
+		return
+	}
+
+	ter := r.FormValue("ter") // test request
+	if ter != "" {
+		processTestRequest(w, r)
+	}
+	filename := r.FormValue("filename")
+	if filename != "" {
+		saveAudioLog(w, r)
+	}
+	editedlog := r.FormValue("editedlog")
+	if editedlog != "" {
+		saveEditedLogAndSummary(w, r)
+	}
 }
 
 func streamResponseFromUserPrompt(userPrompt string, w http.ResponseWriter) {
@@ -490,6 +506,10 @@ type sampleData struct {
 }
 
 func saveAudioLog(w http.ResponseWriter, r *http.Request) {
+	if os.Getenv("TESTING")!=""{
+		io.WriteString(w,"calling saveAudioFile and transcribeAudio")
+		return
+	}
 	aud := saveAudioFile(w, r)
 	transcribeAudio(aud, w)
 }
@@ -524,6 +544,7 @@ func loadCustomNames() string {
 }
 
 func saveAudioFile(w http.ResponseWriter, r *http.Request) []byte {
+
 	dat, err := io.ReadAll(r.Body)
 	if err != nil {
 		fmt.Fprintf(w, "could not read request body: %v", err)
@@ -559,6 +580,10 @@ func createFile(lf logFile) {
 }
 
 func saveEditedLogAndSummary(w http.ResponseWriter, r *http.Request) {
+	if os.Getenv("TESTING")!="" {
+		io.WriteString(w,"calling saveEditedLog and saving summary")
+		return
+	}
 	editedLog := saveEditedLog(w, r)
 	summary := summarize(editedLog, w)
 	sm := logFile{
