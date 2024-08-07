@@ -283,14 +283,8 @@ func defineSystemInstructionWithDocs(doc []string, r *http.Request) {
 	latlng := r.FormValue("latlng")
 	weatherJSON := r.FormValue("weather")
 	currentTime := time.Now().In(tzLoc(latlng)).Format("Monday, 03:04PM, 2 January 2006")
-	userPrompt := r.FormValue("userPrompt")
-	if strings.Contains(strings.ToLower(userPrompt),"random"){
-		doc = []string{
-			fmt.Sprintf("%v",randw.Select(5)),
-			fmt.Sprintf("%v",randw.Select(5)),
-		}
-		log.Println("randomizing with: ",doc)
-	}
+	rwords := fmt.Sprintf("%v", randw.Select(5))
+	log.Printf("random words: %v", rwords)
 
 	cl.Model.SystemInstruction = &genai.Content{
 		Parts: []genai.Part{genai.Text(fmt.Sprintf(`You are a considerate and kind
@@ -314,22 +308,25 @@ func defineSystemInstructionWithDocs(doc []string, r *http.Request) {
 
 		If a RESOURCE is not relevant to the user's question, you may ignore its contents.
 
-		If the user's prompt includes the word "Randomize" you must use the words in the RESOURCES
-		in your output.
+		If the user's prompt includes the word "Randomize" or "random" you must use the words
+		in the RANDOM WORDS section below in your output.
+
+		RANDOM WORDS: %v
 
 		If there is insufficent data, please supplement your response with what you know.
 		Some of the user prompts or queries will relate to singing songs. In this case,
 		look up what you know about the relevant song title's lyrics and include some
 		portion of the lyrics into your response.
 
-		DO NOT quote RESOURCE 1 or RESOURCE 2 directly -- they are for your internal use and
+		DO NOT quote RESOURCE 1, RESOURCE 2 or RANDOM WORDS -- they are for your internal use and
 		reference.
 
-		When formulating your response consider the current date and time: %s
-		timezone: %s,
-		and also the user's location: %s. This is particulary important when your response
-		includes an outdoor activity as the elderly may trip and fall in the dark.
-		You must always mention the time and timezone in your response.
+		When formulating your response consider the current date and time: %s,
+		timezone: %s,and also the user's location: %s.
+		
+		This is particulary important when your response includes an outdoor activity
+		as the elderly may trip and fall in the dark.
+		You may mention the time and timezone in your response.
 
 		Evaluate the following weather forecast JSON:
 		%s
@@ -344,11 +341,12 @@ func defineSystemInstructionWithDocs(doc []string, r *http.Request) {
 		long form timezone (eg. Singapore Time or Mountain Standard Time).
 
 		Try to weave in a relevant Aesop fable and look up Kit Siew's life lessons
-		on https://beyondbroadcast.com/ . Do not overuse the Tortoise and the Hare.
+		on https://beyondbroadcast.com/ . Choose a fable that is connected to a word
+		in RANDOM WORDS.
 		
 		Make at least two recommendations, the main recommendation and the alternative.
 		Make it clear that the user has a choice.`,
-			doc[0], doc[1], currentTime, tzLoc(latlng).String(), location, weatherJSON))},
+			doc[0], doc[1], rwords, currentTime, tzLoc(latlng).String(), location, weatherJSON))},
 	}
 
 }
