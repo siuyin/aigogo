@@ -709,12 +709,13 @@ func personalLogEntries(userID string) []string {
 }
 
 func randSelection(list []string, n int) []string {
-	if l := len(list); l < n {
+	l := len(list)
+	if l < n {
 		n = l
 	}
-	perms := rand.Perm(n)
+	perms := rand.Perm(l)
 	s := []string{}
-	for _, p := range perms {
+	for _, p := range perms[:n] {
 		s = append(s, list[p])
 	}
 	return s
