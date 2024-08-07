@@ -311,6 +311,9 @@ func defineSystemInstructionWithDocs(doc []string, r *http.Request) {
 		If the user's prompt includes the word "Randomize" or "random" you must use the words
 		in the RANDOM WORDS section below in your output.
 
+		On the other hand, user's prompt does not include "Randomize" or "random" you must
+		completely ignore RANDOM WORDS.
+
 		RANDOM WORDS: %v
 
 		If there is insufficent data, please supplement your response with what you know.
