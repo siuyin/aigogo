@@ -309,10 +309,8 @@ func defineSystemInstructionWithDocs(doc []string, r *http.Request) {
 		If a RESOURCE is not relevant to the user's question, you may ignore its contents.
 
 		If the user's prompt includes the word "Randomize" or "random" you must use the words
-		in the RANDOM WORDS section below in your output.
-
-		On the other hand, user's prompt does not include "Randomize" or "random" you must
-		completely ignore RANDOM WORDS.
+		in the RANDOM WORDS section below in your output. Conversely, if "random" or "Randomize"
+		is not present you must not use RANDOM WRODS.
 
 		RANDOM WORDS: %v
 
