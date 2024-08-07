@@ -26,6 +26,7 @@ import (
 	"github.com/siuyin/aigotut/client"
 	"github.com/siuyin/aigotut/gfmt"
 	"github.com/siuyin/dflt"
+	"github.com/siuyin/randw"
 	"google.golang.org/api/iterator"
 	"googlemaps.github.io/maps"
 )
@@ -282,6 +283,14 @@ func defineSystemInstructionWithDocs(doc []string, r *http.Request) {
 	latlng := r.FormValue("latlng")
 	weatherJSON := r.FormValue("weather")
 	currentTime := time.Now().In(tzLoc(latlng)).Format("Monday, 03:04PM, 2 January 2006")
+	userPrompt := r.FormValue("userPrompt")
+	if strings.Contains(strings.ToLower(userPrompt),"random"){
+		doc = []string{
+			fmt.Sprintf("%v",randw.Select(5)),
+			fmt.Sprintf("%v",randw.Select(5)),
+		}
+		log.Println("randomizing with: ",doc)
+	}
 
 	cl.Model.SystemInstruction = &genai.Content{
 		Parts: []genai.Part{genai.Text(fmt.Sprintf(`You are a considerate and kind
@@ -291,9 +300,9 @@ func defineSystemInstructionWithDocs(doc []string, r *http.Request) {
 		Your responses are kind but authoritative and firm. Below are RESOURCE 1 and
 		RESOURCE 2 from experienced caregiver KitSiew. 
 		
-		RESOURCE 1: %s
+		RESOURCE 1: %v
 
-		RESOURCE 2: %s
+		RESOURCE 2: %v
 
 		Prioritize including suggestions from the above resources if and only if they
 		are relevent. Where there
@@ -304,6 +313,9 @@ func defineSystemInstructionWithDocs(doc []string, r *http.Request) {
 		adhere to this infomation and do not express your own opinion. Stick to the facts.
 
 		If a RESOURCE is not relevant to the user's question, you may ignore its contents.
+
+		If the user's prompt includes the word "Randomize" you must use the words in the RESOURCES
+		in your output.
 
 		If there is insufficent data, please supplement your response with what you know.
 		Some of the user prompts or queries will relate to singing songs. In this case,

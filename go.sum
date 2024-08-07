@@ -82,6 +82,10 @@ github.com/siuyin/aigotut v0.0.0-20240630023639-0f35cfe90fce h1:eAiupNaDia0672NA
 github.com/siuyin/aigotut v0.0.0-20240630023639-0f35cfe90fce/go.mod h1:Wg5ME+C6bM2ygS/+x/tsVoHIv6nbpykAh8wcL//xomU=
 github.com/siuyin/dflt v0.0.0-20230329062002-0475f4d54412 h1:wa75y3NwGEDSzxJ0dPdIadS0hCA4Jbq0m1RZoksrHR8=
 github.com/siuyin/dflt v0.0.0-20230329062002-0475f4d54412/go.mod h1:+WsKak36sIJb+W3/mAlKWpfpWdo2y7tv3/zxu6YE9O4=
+github.com/siuyin/randw v0.0.0-20240807041018-c640b7ae43e8 h1:HSoK/3veHhZzbN0GTKjdnomTDOIH7xRMeeaMwXjKK/U=
+github.com/siuyin/randw v0.0.0-20240807041018-c640b7ae43e8/go.mod h1:n7J+mizG3yLzqF+6pqNAg5BmxufDdMDHsnzbUmAqU7M=
+github.com/siuyin/randw v0.0.0-20240807052134-ff4580c52fef h1:iJvbMzIPyqkyJwhjzr1248O8/6tqOsrnTwQt4dobKZw=
+github.com/siuyin/randw v0.0.0-20240807052134-ff4580c52fef/go.mod h1:n7J+mizG3yLzqF+6pqNAg5BmxufDdMDHsnzbUmAqU7M=
 github.com/stretchr/objx v0.1.0/go.mod h1:HFkY916IF+rwdDfMAkV7OtwuqBVzrE8GR6GFx+wExME=
 github.com/stretchr/objx v0.4.0/go.mod h1:YvHI0jy2hoMjB+UWwv71VJQ9isScKT/TqJzVSSt89Yw=
 github.com/stretchr/objx v0.5.0/go.mod h1:Yh+to48EsGEfYuaHDzXPcE3xhTkx73EhmCGUpEOglKo=

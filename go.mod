@@ -7,6 +7,7 @@ require (
 	github.com/philippgille/chromem-go v0.6.0
 	github.com/siuyin/aigotut v0.0.0-20240630023639-0f35cfe90fce
 	github.com/siuyin/dflt v0.0.0-20230329062002-0475f4d54412
+	github.com/siuyin/randw v0.0.0-20240807052134-ff4580c52fef
 	google.golang.org/api v0.183.0
 	googlemaps.github.io/maps v1.7.0
 )
