@@ -283,7 +283,11 @@ func defineSystemInstructionWithDocs(doc []string, r *http.Request) {
 	latlng := r.FormValue("latlng")
 	weatherJSON := r.FormValue("weather")
 	currentTime := time.Now().In(tzLoc(latlng)).Format("Monday, 03:04PM, 2 January 2006")
+
 	rwords := fmt.Sprintf("%v", randw.Select(5))
+	if !strings.Contains(strings.ToLower(r.FormValue("userPrompt")), "random") {
+		rwords = ""
+	}
 	log.Printf("random words: %v", rwords)
 
 	cl.Model.SystemInstruction = &genai.Content{
@@ -309,8 +313,7 @@ func defineSystemInstructionWithDocs(doc []string, r *http.Request) {
 		If a RESOURCE is not relevant to the user's question, you may ignore its contents.
 
 		If the user's prompt includes the word "Randomize" or "random" you must use the words
-		in the RANDOM WORDS section below in your output. Conversely, if "random" or "Randomize"
-		is not present you must not use RANDOM WRODS.
+		in the RANDOM WORDS section below in your output. 
 
 		RANDOM WORDS: %v
 
