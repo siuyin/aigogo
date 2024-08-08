@@ -49,3 +49,19 @@ skaffold build   # this creates an image ready to deploy
 
 Create a Cloud Storage bucket and have it mounted on /data
 copy data/aigogo/123456 to /data/aigogo/123456
+
+## Software walk through with go present
+Install with:
+```
+go get golang.org/x/tools/cmd/present
+go install golang.org/x/tools/cmd/present
+```
+
+The `go install` installs the present binary in `$HOME/go/bin`.
+As this is a development/presentation dependency,
+run `go mod tidy` to remove this dependency after installation.
+
+Run `present`:
+```
+$HOME/go/bin/present
+```
