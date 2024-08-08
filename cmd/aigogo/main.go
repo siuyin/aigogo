@@ -63,9 +63,17 @@ func init() {
 	// safety settings doc: https://cloud.google.com/vertex-ai/generative-ai/docs/multimodal/configure-safety-attributes#gemini-TASK-samples-go
 	// HarmBlockNone is available only on "invoiced accounts".
 	cl.Model.SafetySettings = []*genai.SafetySetting{
-		{Category: genai.HarmCategoryDangerousContent, Threshold: genai.HarmBlockOnlyHigh},
+		{Category: genai.HarmCategoryDangerousContent, Threshold: genai.HarmBlockOnlyHigh}, // need to set to High to avoid Daisy Bell trigger
+		{Category: genai.HarmCategorySexuallyExplicit, Threshold: genai.HarmBlockOnlyHigh}, // default is low as Daisy Bell triggers this
+		{Category: genai.HarmCategoryHarassment, Threshold: genai.HarmBlockOnlyHigh},
+		{Category: genai.HarmCategoryHateSpeech, Threshold: genai.HarmBlockOnlyHigh},
+		// {Category: genai.HarmCategoryDangerous, Threshold: genai.HarmBlockOnlyHigh},  // 400 response
+		// {Category: genai.HarmCategorySexual, Threshold: genai.HarmBlockOnlyHigh},  // 400 response
+		// {Category: genai.HarmCategoryViolence, Threshold: genai.HarmBlockOnlyHigh},  // 400 response
+		// {Category: genai.HarmCategoryToxicity, Threshold: genai.HarmBlockOnlyHigh},  // 400 response
+		// {Category: genai.HarmCategoryDerogatory, Threshold: genai.HarmBlockOnlyHigh}, // 400 response
 		// {Category: genai.HarmCategoryUnspecified, Threshold: genai.HarmBlockOnlyHigh}, // 400 response
-		// {Category: genai.HarmCategoryMedical,Threshold: genai.HarmBlockMediumAndAbove}, // default
+		// {Category: genai.HarmCategoryMedical, Threshold: genai.HarmBlockOnlyHigh}, // 400 response
 	}
 	temp := float32(0.0)
 	cl.Model.GenerationConfig.Temperature = &temp
@@ -276,7 +284,17 @@ func streamResponseFromUserPrompt(userPrompt string, w http.ResponseWriter) {
 			break
 		}
 		if err != nil {
-			io.WriteString(w, "<p>hmm.. apparently I have an issue:"+err.Error())
+			fmt.Fprintf(w, "<p>I've encounted an issue: %v:", err)
+			resp = iter.MergedResponse()
+			if resp == nil {
+				return
+			}
+			log.Printf("num cand: %v, finishReason: %v", len(resp.Candidates), resp.Candidates[0].FinishReason)
+			for _, c := range resp.Candidates {
+				for _, sr := range c.SafetyRatings {
+					fmt.Fprintf(w, " category:%v, probability: %v, blocked: %v", sr.Category, sr.Probability, sr.Blocked)
+				}
+			}
 			return
 		}
 		fPrintResponse(w, resp)
