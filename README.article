@@ -11,6 +11,11 @@ See [README.md](README.md) for building and running instructions.
 ## Main function
 .code cmd/aigogo/main.go /func main\(/,/^}/
 
+### go embed
+`cmd/aigogo/internal/public/public.go`:
+
+.code cmd/aigogo/internal/public/public.go
+
 ### Initialization
 .code cmd/aigogo/main.go /func init\(/,/^}/
 

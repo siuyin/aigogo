@@ -105,10 +105,6 @@ func main() {
 
 	http.HandleFunc("/userIDExist", userIDExistFunc)
 
-	life := func(w http.ResponseWriter, r *http.Request) {
-		latlng := r.FormValue("latlng")
-		meaningOfLife(w, r.FormValue("loc"), time.Now().In(tzLoc(latlng)).Format("Monday, 03:04PM, 2 January 2006"))
-	}
 	http.HandleFunc("/life", life)
 
 	log.Println("starting web server")
@@ -232,6 +228,11 @@ func dataWrite(w http.ResponseWriter, r *http.Request) {
 	if editedlog != "" {
 		saveEditedLogAndSummary(w, r)
 	}
+}
+
+func life(w http.ResponseWriter, r *http.Request) {
+	latlng := r.FormValue("latlng")
+	meaningOfLife(w, r.FormValue("loc"), time.Now().In(tzLoc(latlng)).Format("Monday, 03:04PM, 2 January 2006"))
 }
 
 func loadSelFunc(w http.ResponseWriter, r *http.Request) {
@@ -434,7 +435,7 @@ func meaningOfLife(w http.ResponseWriter, location string, currentTime string) {
 		Your response should be at least 100 words long.
 		Weave into your response the user's location: %s
 		and the current time %s.
-		Format your output as plain text.`, location, currentTime))},
+		`, location, currentTime))},
 	}
 	iter := cl.Model.GenerateContentStream(context.Background(),
 		genai.Text("What is the meaning of life?"))
