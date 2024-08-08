@@ -59,9 +59,11 @@ type tmplDat struct {
 
 func init() {
 	cl = client.New()
+	// safety settings doc: https://cloud.google.com/vertex-ai/generative-ai/docs/multimodal/configure-safety-attributes#gemini-TASK-samples-go
+	// HarmBlockNone is available only on "invoiced accounts".
 	cl.Model.SafetySettings = []*genai.SafetySetting{
 		{Category: genai.HarmCategoryDangerousContent, Threshold: genai.HarmBlockOnlyHigh},
-		// {Category: genai.HarmCategoryMedical,Threshold: genai.HarmBlockMediumAndAbove},
+		// {Category: genai.HarmCategoryMedical,Threshold: genai.HarmBlockMediumAndAbove}, // default
 	}
 	temp := float32(0.0)
 	cl.Model.GenerationConfig.Temperature = &temp
