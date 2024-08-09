@@ -780,14 +780,14 @@ func generateMemories(logEntr []string, w http.ResponseWriter, r *http.Request) 
 		extrapolate and generate content. However you must explicitly state
 		that you are doing this.
 
-		At the end of your output you must quote the log entries
-		just only the lines similar to "log-2024-08-04T02:25:10.513Z",
+		At the end of your output you must quote all the log entries
+		i.e. the lines similar to "log-2024-08-04T02:25:10.513Z",
 		wrapped in html links similar to
 		<a href="/ref?log=log-2024-08-04T02:25:10.513Z" class="popup">log-2024-08-04T02:25:10.513Z</a>
 		comma seperated,
 		preceeded by "ref:[" and closed with "]". 
 
-		Limit your output to 60 words.
+		Limit your output to 65 words.
 		`)},
 	}
 
