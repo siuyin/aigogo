@@ -244,7 +244,7 @@ func dataWrite(w http.ResponseWriter, r *http.Request) {
 
 func life(w http.ResponseWriter, r *http.Request) {
 	latlng := r.FormValue("latlng")
-	meaningOfLife(w, r.FormValue("loc"), time.Now().In(tzLoc(latlng)).Format("Monday, 03:04PM, 2 January 2006"))
+	meaningOfLife(w, r.FormValue("loc"), time.Now().In(tzLoc(latlng)).Format("Monday, 15:04PM, 2 January 2006"))
 }
 
 func loadSelFunc(w http.ResponseWriter, r *http.Request) {
@@ -305,7 +305,7 @@ func defineSystemInstructionWithDocs(doc []string, r *http.Request) {
 	location := r.FormValue("loc")
 	latlng := r.FormValue("latlng")
 	weatherJSON := r.FormValue("weather")
-	currentTime := time.Now().In(tzLoc(latlng)).Format("Monday, 03:04PM, 2 January 2006")
+	currentTime := time.Now().In(tzLoc(latlng)).Format("Monday, 15:04PM, 2 January 2006")
 
 	rwords := fmt.Sprintf("%v", randw.Select(5))
 	if !strings.Contains(strings.ToLower(r.FormValue("userPrompt")), "random") {
@@ -867,7 +867,7 @@ func personalLogDetails(w http.ResponseWriter, r *http.Request) {
 	}
 	det := logDet{
 		UserID: r.FormValue("userID"), Basename: r.FormValue("log"),
-		Date:       dt.Format("Monday, 1 Jan 2006, 15:04:05 UTC"),
+		Date:       dt.Format("Monday, 2 Jan 2006, 15:04:05 UTC"),
 		Summary:    getBody(r.FormValue("log")+".summary.txt", r.FormValue("userID")),
 		Transcript: getBody(r.FormValue("log")+".txt", r.FormValue("userID")),
 		Audio:      []byte(getBody(r.FormValue("log")+".ogg", r.FormValue("userID"))),
