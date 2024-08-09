@@ -772,7 +772,7 @@ func generateMemories(logEntr []string, w http.ResponseWriter, r *http.Request) 
 		person to maintain her mental acuity and to stave off dementia.
 
 		When quoting event, you must state the day, date and/or time in the form
-		"(Monday, 5 Aug 2024)" or "(5 Aug 2024, 3:25pm)".
+		"(Monday, 5 Aug 2024)" or "(5 Aug 2024, 15:25UTC)".
 		Extract the day,date and time from the 
 		log entry line (eg. "log-2024-08-04T02:25:10.513Z").
 		
